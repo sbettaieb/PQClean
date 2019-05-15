@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_initialize_hash_function(
+    uint8_t *seed_state,
     const unsigned char *pub_seed, const unsigned char *sk_seed);
 
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_prf_addr(

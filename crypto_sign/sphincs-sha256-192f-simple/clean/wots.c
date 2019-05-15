@@ -32,7 +32,8 @@ static void wots_gen_sk(unsigned char *sk, const unsigned char *sk_seed,
  * Interprets in as start-th value of the chain.
  * addr has to contain the address of the chain.
  */
-static void gen_chain(unsigned char *out, const unsigned char *in,
+static void gen_chain(uint8_t *seed_state,
+                      unsigned char *out, const unsigned char *in,
                       unsigned int start, unsigned int steps,
                       const unsigned char *pub_seed, uint32_t addr[8]) {
     uint32_t i;
@@ -44,6 +45,7 @@ static void gen_chain(unsigned char *out, const unsigned char *in,
     for (i = start; i < (start + steps) && i < SPX_WOTS_W; i++) {
         PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_set_hash_addr(addr, i);
         PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_thash_1(
+            seed_state,
             out, out, pub_seed, addr);
     }
 }
@@ -108,6 +110,7 @@ static void chain_lengths(unsigned int *lengths, const unsigned char *msg) {
  * Writes the computed public key to 'pk'.
  */
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_gen_pk(
+    uint8_t *seed_state,
     unsigned char *pk, const unsigned char *sk_seed,
     const unsigned char *pub_seed, uint32_t addr[8]) {
     uint32_t i;
@@ -115,7 +118,7 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_gen_pk(
     for (i = 0; i < SPX_WOTS_LEN; i++) {
         PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_set_chain_addr(addr, i);
         wots_gen_sk(pk + i * SPX_N, sk_seed, addr);
-        gen_chain(pk + i * SPX_N, pk + i * SPX_N,
+        gen_chain(seed_state, pk + i * SPX_N, pk + i * SPX_N,
                   0, SPX_WOTS_W - 1, pub_seed, addr);
     }
 }
@@ -124,6 +127,7 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_gen_pk(
  * Takes a n-byte message and the 32-byte sk_see to compute a signature 'sig'.
  */
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_sign(
+    uint8_t *seed_state,
     unsigned char *sig, const unsigned char *msg,
     const unsigned char *sk_seed, const unsigned char *pub_seed,
     uint32_t addr[8]) {
@@ -135,7 +139,7 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_sign(
     for (i = 0; i < SPX_WOTS_LEN; i++) {
         PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_set_chain_addr(addr, i);
         wots_gen_sk(sig + i * SPX_N, sk_seed, addr);
-        gen_chain(sig + i * SPX_N, sig + i * SPX_N, 0, lengths[i], pub_seed, addr);
+        gen_chain(seed_state, sig + i * SPX_N, sig + i * SPX_N, 0, lengths[i], pub_seed, addr);
     }
 }
 
@@ -145,6 +149,7 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_sign(
  * Writes the computed public key to 'pk'.
  */
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_pk_from_sig(
+    uint8_t *seed_state,
     unsigned char *pk,
     const unsigned char *sig, const unsigned char *msg,
     const unsigned char *pub_seed, uint32_t addr[8]) {
@@ -155,7 +160,7 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_pk_from_sig(
 
     for (i = 0; i < SPX_WOTS_LEN; i++) {
         PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_set_chain_addr(addr, i);
-        gen_chain(pk + i * SPX_N, sig + i * SPX_N,
+        gen_chain(seed_state, pk + i * SPX_N, sig + i * SPX_N,
                   lengths[i], SPX_WOTS_W - 1 - lengths[i], pub_seed, addr);
     }
 }

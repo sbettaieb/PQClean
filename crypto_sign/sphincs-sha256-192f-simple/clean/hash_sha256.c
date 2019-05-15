@@ -12,8 +12,9 @@
 /* For SHA256, there is no immediate reason to initialize at the start,
    so this function is an empty operation. */
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_initialize_hash_function(
+    uint8_t *seed_state,
     const unsigned char *pub_seed, const unsigned char *sk_seed) {
-    PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_seed_state(pub_seed);
+    PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_seed_state(seed_state, pub_seed);
     (void)sk_seed; /* Suppress an 'unused parameter' warning. */
 }
 

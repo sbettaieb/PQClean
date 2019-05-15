@@ -38,6 +38,7 @@ unsigned long long PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_bytes_to_ull(
  * Expects address to be complete other than the tree_height and tree_index.
  */
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_compute_root(
+    uint8_t *seed_state,
     unsigned char *root, const unsigned char *leaf,
     uint32_t leaf_idx, uint32_t idx_offset,
     const unsigned char *auth_path, uint32_t tree_height,
@@ -67,10 +68,12 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_compute_root(
         /* Pick the right or left neighbor, depending on parity of the node. */
         if (leaf_idx & 1) {
             PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_thash_2(
+                seed_state,
                 buffer + SPX_N, buffer, pub_seed, addr);
             memcpy(buffer, auth_path, SPX_N);
         } else {
             PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_thash_2(
+                seed_state,
                 buffer, buffer, pub_seed, addr);
             memcpy(buffer + SPX_N, auth_path, SPX_N);
         }
@@ -84,6 +87,7 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_compute_root(
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_set_tree_index(
         addr, leaf_idx + idx_offset);
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_thash_2(
+        seed_state,
         root, buffer, pub_seed, addr);
 }
 
@@ -96,11 +100,13 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_compute_root(
  * it is possible to continue counting indices across trees.
  */
 static void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash(
+    uint8_t *seed_state,
     unsigned char *root, unsigned char *auth_path,
     unsigned char *stack, unsigned int *heights,
     const unsigned char *sk_seed, const unsigned char *pub_seed,
     uint32_t leaf_idx, uint32_t idx_offset, uint32_t tree_height,
     void (*gen_leaf)(
+        uint8_t * /* seed_state */,
         unsigned char * /* leaf */,
         const unsigned char * /* sk_seed */,
         const unsigned char * /* pub_seed */,
@@ -113,7 +119,7 @@ static void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash(
 
     for (idx = 0; idx < (uint32_t)(1 << tree_height); idx++) {
         /* Add the next leaf node to the stack. */
-        gen_leaf(stack + offset * SPX_N,
+        gen_leaf(seed_state, stack + offset * SPX_N,
                  sk_seed, pub_seed, idx + idx_offset, tree_addr);
         offset++;
         heights[offset - 1] = 0;
@@ -135,6 +141,7 @@ static void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash(
                 tree_addr, tree_idx + (idx_offset >> (heights[offset - 1] + 1)));
             /* Hash the top-most nodes from the stack together. */
             PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_thash_2(
+                seed_state,
                 stack + (offset - 2)*SPX_N, stack + (offset - 2)*SPX_N,
                 pub_seed, tree_addr);
             offset--;
@@ -154,10 +161,12 @@ static void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash(
 /* The wrappers below ensure that we use fixed-size buffers on the stack */
 
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash_FORS_HEIGHT(
+    uint8_t *seed_state,
     unsigned char *root, unsigned char *auth_path,
     const unsigned char *sk_seed, const unsigned char *pub_seed,
     uint32_t leaf_idx, uint32_t idx_offset,
     void (*gen_leaf)(
+        uint8_t * /* seed_state */,
         unsigned char * /* leaf */,
         const unsigned char * /* sk_seed */,
         const unsigned char * /* pub_seed */,
@@ -168,15 +177,18 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash_FORS_HEIGHT(
     unsigned int heights[SPX_FORS_HEIGHT + 1];
 
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash(
+        seed_state,
         root, auth_path, stack, heights, sk_seed, pub_seed,
         leaf_idx, idx_offset, SPX_FORS_HEIGHT, gen_leaf, tree_addr);
 }
 
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash_TREE_HEIGHT(
+    uint8_t *seed_state,
     unsigned char *root, unsigned char *auth_path,
     const unsigned char *sk_seed, const unsigned char *pub_seed,
     uint32_t leaf_idx, uint32_t idx_offset,
     void (*gen_leaf)(
+        uint8_t * /* seed_state */,
         unsigned char * /* leaf */,
         const unsigned char * /* sk_seed */,
         const unsigned char * /* pub_seed */,
@@ -187,6 +199,7 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash_TREE_HEIGHT(
     unsigned int heights[SPX_TREE_HEIGHT + 1];
 
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash(
+        seed_state,
         root, auth_path, stack, heights, sk_seed, pub_seed,
         leaf_idx, idx_offset, SPX_TREE_HEIGHT, gen_leaf, tree_addr);
 }

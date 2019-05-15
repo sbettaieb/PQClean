@@ -10,6 +10,7 @@
  * Assumes m contains at least SPX_FORS_HEIGHT * SPX_FORS_TREES bits.
  */
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_fors_sign(
+    uint8_t *seed_state,
     unsigned char *sig, unsigned char *pk,
     const unsigned char *m,
     const unsigned char *sk_seed, const unsigned char *pub_seed,
@@ -23,6 +24,7 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_fors_sign(
  * Assumes m contains at least SPX_FORS_HEIGHT * SPX_FORS_TREES bits.
  */
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_fors_pk_from_sig(
+    uint8_t *seed_state,
     unsigned char *pk,
     const unsigned char *sig, const unsigned char *m,
     const unsigned char *pub_seed, const uint32_t fors_addr[8]);

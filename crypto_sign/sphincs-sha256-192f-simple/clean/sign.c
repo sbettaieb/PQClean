@@ -8,6 +8,7 @@
 #include "hash.h"
 #include "params.h"
 #include "randombytes.h"
+#include "sha256.h"
 #include "thash.h"
 #include "utils.h"
 #include "wots.h"
@@ -16,7 +17,7 @@
  * Computes the leaf at a given address. First generates the WOTS key pair,
  * then computes leaf by hashing horizontally.
  */
-static void wots_gen_leaf(unsigned char *leaf, const unsigned char *sk_seed,
+static void wots_gen_leaf(uint8_t *seed_state, unsigned char *leaf, const unsigned char *sk_seed,
                           const unsigned char *pub_seed,
                           uint32_t addr_idx, const uint32_t tree_addr[8]) {
     unsigned char pk[SPX_WOTS_BYTES];
@@ -33,11 +34,13 @@ static void wots_gen_leaf(unsigned char *leaf, const unsigned char *sk_seed,
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_set_keypair_addr(
         wots_addr, addr_idx);
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_gen_pk(
+        seed_state,
         pk, sk_seed, pub_seed, wots_addr);
 
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_copy_keypair_addr(
         wots_pk_addr, wots_addr);
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_thash_WOTS_LEN(
+        seed_state,
         leaf, pk, pub_seed, wots_pk_addr);
 }
 
@@ -81,6 +84,7 @@ int PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_crypto_sign_seed_keypair(
        in one function. */
     unsigned char auth_path[SPX_TREE_HEIGHT * SPX_N];
     uint32_t top_tree_addr[8] = {0};
+    uint8_t seed_state[SPX_SEED_STATE_BYTES] = {0};
 
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_set_layer_addr(
         top_tree_addr, SPX_D - 1);
@@ -94,10 +98,11 @@ int PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_crypto_sign_seed_keypair(
 
     /* This hook allows the hash function instantiation to do whatever
        preparation or computation it needs, based on the public seed. */
-    PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_initialize_hash_function(pk, sk);
+    PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_initialize_hash_function(seed_state, pk, sk);
 
     /* Compute root node of the top-most subtree. */
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash_TREE_HEIGHT(
+        seed_state,
         sk + 3 * SPX_N, auth_path, sk, sk + 2 * SPX_N, 0, 0,
         wots_gen_leaf, top_tree_addr);
 
@@ -140,11 +145,12 @@ int PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_crypto_sign_signature(
     uint32_t idx_leaf;
     uint32_t wots_addr[8] = {0};
     uint32_t tree_addr[8] = {0};
+    uint8_t seed_state[SPX_SEED_STATE_BYTES] = {0};
 
     /* This hook allows the hash function instantiation to do whatever
        preparation or computation it needs, based on the public seed. */
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_initialize_hash_function(
-        pub_seed, sk_seed);
+        seed_state, pub_seed, sk_seed);
 
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_set_type(
         wots_addr, SPX_ADDR_TYPE_WOTS);
@@ -170,6 +176,7 @@ int PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_crypto_sign_signature(
 
     /* Sign the message hash using FORS. */
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_fors_sign(
+        seed_state,
         sig, root, mhash, sk_seed, pub_seed, wots_addr);
     sig += SPX_FORS_BYTES;
 
@@ -184,11 +191,13 @@ int PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_crypto_sign_signature(
 
         /* Compute a WOTS signature. */
         PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_sign(
+            seed_state,
             sig, root, sk_seed, pub_seed, wots_addr);
         sig += SPX_WOTS_BYTES;
 
         /* Compute the authentication path for the used WOTS leaf. */
         PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash_TREE_HEIGHT(
+            seed_state,
             root, sig, sk_seed, pub_seed, idx_leaf, 0,
             wots_gen_leaf, tree_addr);
         sig += SPX_TREE_HEIGHT * SPX_N;
@@ -221,6 +230,7 @@ int PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_crypto_sign_verify(
     uint32_t wots_addr[8] = {0};
     uint32_t tree_addr[8] = {0};
     uint32_t wots_pk_addr[8] = {0};
+    uint8_t seed_state[SPX_SEED_STATE_BYTES] = {0};
 
     if (siglen != SPX_BYTES) {
         return -1;
@@ -229,6 +239,7 @@ int PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_crypto_sign_verify(
     /* This hook allows the hash function instantiation to do whatever
        preparation or computation it needs, based on the public seed. */
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_initialize_hash_function(
+        seed_state,
         pub_seed, NULL);
 
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_set_type(
@@ -250,6 +261,7 @@ int PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_crypto_sign_verify(
         wots_addr, idx_leaf);
 
     PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_fors_pk_from_sig(
+        seed_state,
         root, sig, mhash, pub_seed, wots_addr);
     sig += SPX_FORS_BYTES;
 
@@ -270,15 +282,18 @@ int PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_crypto_sign_verify(
         /* Initially, root is the FORS pk, but on subsequent iterations it is
            the root of the subtree below the currently processed subtree. */
         PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_wots_pk_from_sig(
+            seed_state,
             wots_pk, sig, root, pub_seed, wots_addr);
         sig += SPX_WOTS_BYTES;
 
         /* Compute the leaf node using the WOTS public key. */
         PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_thash_WOTS_LEN(
+            seed_state,
             leaf, wots_pk, pub_seed, wots_pk_addr);
 
         /* Compute the root node of this subtree. */
         PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_compute_root(
+            seed_state,
             root, leaf, idx_leaf, 0, sig, SPX_TREE_HEIGHT,
             pub_seed, tree_addr);
         sig += SPX_TREE_HEIGHT * SPX_N;

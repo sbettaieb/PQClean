@@ -22,6 +22,7 @@ unsigned long long PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_bytes_to_ull(
  * Expects address to be complete other than the tree_height and tree_index.
  */
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_compute_root(
+    uint8_t *seed_state,
     unsigned char *root, const unsigned char *leaf,
     uint32_t leaf_idx, uint32_t idx_offset,
     const unsigned char *auth_path, uint32_t tree_height,
@@ -36,10 +37,12 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_compute_root(
  * it is possible to continue counting indices across trees.
  */
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash_FORS_HEIGHT(
+    uint8_t *seed_state,
     unsigned char *root, unsigned char *auth_path,
     const unsigned char *sk_seed, const unsigned char *pub_seed,
     uint32_t leaf_idx, uint32_t idx_offset,
     void (*gen_leaf)(
+        uint8_t * /* seed_state */,
         unsigned char * /* leaf */,
         const unsigned char * /* sk_seed */,
         const unsigned char * /* pub_seed */,
@@ -47,10 +50,12 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash_FORS_HEIGHT(
     uint32_t tree_addr[8]);
 
 void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_treehash_TREE_HEIGHT(
+    uint8_t *seed_state,
     unsigned char *root, unsigned char *auth_path,
     const unsigned char *sk_seed, const unsigned char *pub_seed,
     uint32_t leaf_idx, uint32_t idx_offset,
     void (*gen_leaf)(
+        uint8_t * /* seed_state */,
         unsigned char * /* leaf */,
         const unsigned char * /* sk_seed */,
         const unsigned char * /* pub_seed */,

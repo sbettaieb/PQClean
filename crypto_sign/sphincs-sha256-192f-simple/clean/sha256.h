@@ -14,8 +14,8 @@ void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_mgf1(
     unsigned char *out, unsigned long outlen,
     unsigned char *input_plus_four_bytes, unsigned long inlen);
 
-extern uint8_t PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_state_seeded[40];
+#define SPX_SEED_STATE_BYTES 40
 
-void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_seed_state(const unsigned char *pub_seed);
+void PQCLEAN_SPHINCSSHA256192FSIMPLE_CLEAN_seed_state(uint8_t *seed_state, const unsigned char *pub_seed);
 
 #endif
