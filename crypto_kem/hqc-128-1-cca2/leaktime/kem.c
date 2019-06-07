@@ -20,7 +20,7 @@
  * \param[out] sk String containing the secret key
  * return 0 if keygen is successful
  */
-int crypto_kem_keypair(unsigned char* pk, unsigned char* sk) {
+int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_keypair(unsigned char* pk, unsigned char* sk) {
   #ifdef VERBOSE
     printf("\n\n\n\n### KEYGEN ###");  
   #endif  
@@ -38,7 +38,7 @@ int crypto_kem_keypair(unsigned char* pk, unsigned char* sk) {
  * \param[in] pk String containing the public key
  * return 0 if encapsulation is successful
  */
-int crypto_kem_enc(unsigned char* ct, unsigned char* ss, const unsigned char* pk) {
+int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_enc(unsigned char* ct, unsigned char* ss, const unsigned char* pk) {
   #ifdef VERBOSE
     printf("\n\n\n\n### ENCAPS ###");  
   #endif    
@@ -105,7 +105,7 @@ int crypto_kem_enc(unsigned char* ct, unsigned char* ss, const unsigned char* pk
  * \param[in] sk String containing the secret key
  * return 0 if decapsulation is successful, -1 otherwise
  */
-int crypto_kem_dec(unsigned char* ss, const unsigned char* ct, const unsigned char* sk) {
+int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_dec(unsigned char* ss, const unsigned char* ct, const unsigned char* sk) {
   #ifdef VERBOSE
     printf("\n\n\n\n### DECAPS ###");  
   #endif 

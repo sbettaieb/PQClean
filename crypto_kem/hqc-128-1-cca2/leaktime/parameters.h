@@ -61,10 +61,10 @@
 #define PARAM_SECURITY                      128
 #define PARAM_DFR_EXP                       128
 
-#define SECRET_KEY_BYTES                    CRYPTO_SECRETKEYBYTES
-#define PUBLIC_KEY_BYTES                    CRYPTO_PUBLICKEYBYTES
-#define SHARED_SECRET_BYTES                 CRYPTO_BYTES
-#define CIPHERTEXT_BYTES                    CRYPTO_CIPHERTEXTBYTES
+#define SECRET_KEY_BYTES                    PQCLEAN_HQC1281CCA2_LEAKTIME_CRYPTO_SECRETKEYBYTES
+#define PUBLIC_KEY_BYTES                    PQCLEAN_HQC1281CCA2_LEAKTIME_CRYPTO_PUBLICKEYBYTES
+#define SHARED_SECRET_BYTES                 PQCLEAN_HQC1281CCA2_LEAKTIME_CRYPTO_BYTES
+#define CIPHERTEXT_BYTES                    PQCLEAN_HQC1281CCA2_LEAKTIME_CRYPTO_CIPHERTEXTBYTES
 
 #define PARAM_POLY                          0x409
 #define PARAM_M                             10

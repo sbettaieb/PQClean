@@ -5,6 +5,8 @@
 
 #include "gf2x.h"
 #include <NTL/GF2X.h>
+#include "parameters.h"
+
 using namespace NTL;
 
 /**

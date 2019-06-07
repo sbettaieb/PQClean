@@ -8,13 +8,11 @@
 
 #ifdef __cplusplus
 #define EXTERNC extern "C"
+#include <cinttypes>
 #else
 #define EXTERNC
-#endif
-
 #include <inttypes.h>
-
-#include "parameters.h"
+#endif
 
 EXTERNC void ntl_cyclic_product(uint8_t*o, const uint8_t* v1, const uint8_t* v2);
 
