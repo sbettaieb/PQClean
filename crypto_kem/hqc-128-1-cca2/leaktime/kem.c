@@ -6,6 +6,7 @@
 #include "api.h"
 #include "parameters.h"
 #include "hqc.h"
+#include "sha2.h"
 
 /**
  *\fn int crypto_kem_keypair(unsigned char* pk, unsigned char* sk)

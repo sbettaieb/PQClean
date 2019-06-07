@@ -2,19 +2,16 @@
 
 LIB=libhqc-128-1-cca2_leaktime.a
 HEADERS=api.h bch.h gf2x.h hqc.h parameters.h parsing.h repetition.h tensor.h vector.h
-OBJECTS=bch.o gf2x.o hqc.o kem.o parsing.o repetition.o tensor.o vector.o lib/hash/hash.o lib/rng/rng.o
+OBJECTS=bch.o gf2x.o hqc.o kem.o parsing.o repetition.o tensor.o vector.o lib/rng/rng.o
 
 # TODO: remove these later
 CC=g++
-EXTRAFLAGS=-Ilib/hash -Ilib/rng
+EXTRAFLAGS=-Ilib/rng
 
 # TODO: CFLAGS=-O3 -Wall -Wextra -Wpedantic -Wvla -Werror -Wmissing-prototypes -Wredundant-decls -std=c99 -I../../../common $(EXTRAFLAGS)
-CFLAGS=-O3 -Wall -Wextra -Wpedantic -Wvla -Werror -Wredundant-decls $(EXTRAFLAGS)
+CFLAGS=-O3 -Wall -Wextra -Wpedantic -Wvla -Werror -Wredundant-decls -I../../../common $(EXTRAFLAGS)
 
 all: $(LIB)
-
-lib/hash/hash.o: lib/hash/hash.c lib/hash/hash.h
-	$(CC) $(CFLAGS) -lcrypto -c -o $@ $<
 
 lib/rng/rng.o: lib/rng/rng.c lib/rng/rng.h
 	$(CC) $(CFLAGS) -c -o $@ $<

@@ -13,7 +13,6 @@
 #include <inttypes.h>
 
 #include "parameters.h"
-#include "hash.h"
 #include "rng.h"
 
 #define BITMASK(a, size) ((1UL << (a % size)) - 1) /*!< Create a mask*/
