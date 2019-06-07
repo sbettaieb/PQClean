@@ -100,7 +100,7 @@ void vect_set_random(uint8_t* v, AES_XOF_struct* ctx) {
 void vect_set_random_from_randombytes(uint8_t* v) {
   uint8_t rand_bytes [VEC_K_SIZE_BYTES] = {0};
 
-  randombytes(rand_bytes, VEC_K_SIZE_BYTES);
+  local_randombytes(rand_bytes, VEC_K_SIZE_BYTES);
   memcpy(v, rand_bytes, VEC_K_SIZE_BYTES);
 } 
 

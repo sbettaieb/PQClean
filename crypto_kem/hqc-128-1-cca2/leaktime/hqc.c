@@ -21,12 +21,12 @@ void hqc_pke_keygen(unsigned char* pk, unsigned char* sk) {
 
   // Create seed_expanders for public key and secret key
   unsigned char sk_seed[SEED_BYTES];
-  randombytes(sk_seed, SEED_BYTES);
+  local_randombytes(sk_seed, SEED_BYTES);
   AES_XOF_struct* sk_seedexpander = (AES_XOF_struct*) malloc(sizeof(AES_XOF_struct));
   seedexpander_init(sk_seedexpander, sk_seed, sk_seed + 32, SEEDEXPANDER_MAX_LENGTH);
     
   unsigned char pk_seed[SEED_BYTES];
-  randombytes(pk_seed, SEED_BYTES);
+  local_randombytes(pk_seed, SEED_BYTES);
   AES_XOF_struct* pk_seedexpander = (AES_XOF_struct*) malloc(sizeof(AES_XOF_struct));
   seedexpander_init(pk_seedexpander, pk_seed, pk_seed + 32, SEEDEXPANDER_MAX_LENGTH);
 
