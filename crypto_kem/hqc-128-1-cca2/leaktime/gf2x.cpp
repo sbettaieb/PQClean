@@ -4,6 +4,7 @@
  */
 
 #include "gf2x.h"
+#include <NTL/GF2X.h>
 using namespace NTL;
 
 /**

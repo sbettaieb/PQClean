@@ -73,11 +73,11 @@ void array_to_codeword(uint8_t* v, uint8_t* c);
 
 void bch_code_decode(uint8_t* m, uint8_t* em);
 
-gf_tables* gf_tables_init();
+gf_tables* gf_tables_init(void);
 
 void gf_generation(gf_tables* gf_tables);
 
-syndrome_set* syndrome_init();
+syndrome_set* syndrome_init(void);
 
 void syndrome_gen(syndrome_set* synd_set, gf_tables* tables, uint8_t* v);
 
@@ -101,7 +101,7 @@ void sigma_poly_clear(sigma_poly* poly);
 
 int16_t gf_mult(gf_tables* tables, int16_t a, int16_t b);
 
-cyclotomic_sets* cyclotomic_init();
+cyclotomic_sets* cyclotomic_init(void);
 
 void cyclotomic_clear(cyclotomic_sets* c_tab);
 

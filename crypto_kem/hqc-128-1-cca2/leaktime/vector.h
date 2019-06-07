@@ -16,7 +16,6 @@
 #include "hash.h"
 #include "rng.h"
 
-#define CEIL_DIVIDE(a, b)  ((a/b) + (a % b == 0 ? 0 : 1)) /*!< Divide a by b and ceil the result*/
 #define BITMASK(a, size) ((1UL << (a % size)) - 1) /*!< Create a mask*/
 
 void vect_fixed_weight(uint8_t* v, const uint16_t weight, AES_XOF_struct* ctx);

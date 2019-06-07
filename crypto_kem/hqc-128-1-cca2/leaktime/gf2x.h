@@ -6,14 +6,18 @@
 #ifndef GF2X_H
 #define GF2X_H
 
-#include <NTL/GF2X.h>
+#ifdef __cplusplus
+#define EXTERNC extern "C"
+#else
+#define EXTERNC
+#endif
+
 #include <inttypes.h>
 
 #include "parameters.h"
 
-using namespace NTL;
+EXTERNC void ntl_cyclic_product(uint8_t*o, const uint8_t* v1, const uint8_t* v2);
 
-GF2XModulus init_modulo();
-void ntl_cyclic_product(uint8_t*o, const uint8_t* v1, const uint8_t* v2);
+#undef EXTERNC
 
 #endif

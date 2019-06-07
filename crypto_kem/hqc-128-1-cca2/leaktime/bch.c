@@ -101,7 +101,7 @@ void get_generator_poly(uint8_t* g) {
 
   char* g_poly_string = GENERATOR_POLY, *pos = g_poly_string;
   uint8_t g_bytes_size = (PARAM_G / 8) + 1;
-  unsigned char tmp[g_bytes_size];
+  unsigned char tmp[PARAM_G / 8 + 1];
 
   for (int i = 0; i < g_bytes_size; ++i)  {
     sscanf(pos, "%2hhx", &tmp[i]);

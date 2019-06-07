@@ -4,11 +4,11 @@
  */
 
 #include "api.h"
-#include "vector.h"
 
 #ifndef HQC_PARAMETERS_H
 #define HQC_PARAMETERS_H
 
+#define CEIL_DIVIDE(a, b)  ((a/b) + (a % b == 0 ? 0 : 1)) /*!< Divide a by b and ceil the result*/
 
 /*
   #define PARAM_N                             Define the parameter n of the scheme  
