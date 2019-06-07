@@ -23,7 +23,7 @@ CFLAGS=-O3 -Wall -Wextra -Wpedantic -Wvla -Werror \
 
 #TODO remove this (remove LDFLAGS from recipes as well)
 CC=g++
-LDFLAGS=-lcrypto -lntl -lgf2x -lgmp -pthread
+LDFLAGS=-lntl -lgf2x -lgmp -pthread
 
 # Number of tests run for functests
 NTESTS=1

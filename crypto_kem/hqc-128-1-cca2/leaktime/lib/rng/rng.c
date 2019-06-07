@@ -7,9 +7,7 @@
 
 #include <string.h>
 #include "rng.h"
-#include <openssl/conf.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
+#include "aes.h"
 
 AES256_CTR_DRBG_struct  DRBG_ctx;
 
@@ -101,14 +99,6 @@ seedexpander(AES_XOF_struct *ctx, unsigned char *x, unsigned long xlen)
     return RNG_SUCCESS;
 }
 
-
-void handleErrors(void);
-void handleErrors(void)
-{
-    ERR_print_errors_fp(stderr);
-    abort();
-}
-
 // Use whatever AES implementation you have. This uses AES from openSSL library
 //    key - 256-bit AES key
 //    ctr - a 128-bit plaintext value
@@ -116,24 +106,9 @@ void handleErrors(void)
 void
 AES256_ECB(unsigned char *key, unsigned char *ctr, unsigned char *buffer)
 {
-    EVP_CIPHER_CTX *ctx;
-    
-    int len;
-    
-    // int ciphertext_len;
-    
-    /* Create and initialise the context */
-    if(!(ctx = EVP_CIPHER_CTX_new())) handleErrors();
-    
-    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ecb(), NULL, key, NULL))
-        handleErrors();
-    
-    if(1 != EVP_EncryptUpdate(ctx, buffer, &len, ctr, 16))
-        handleErrors();
-    // ciphertext_len = len;
-    
-    /* Clean up */
-    EVP_CIPHER_CTX_free(ctx);
+    aes256ctx ctx;
+    aes256_keyexp(&ctx, key);
+    aes256_ecb(buffer, ctr, 1, &ctx);
 }
 
 void
