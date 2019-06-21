@@ -1,11 +1,13 @@
 /**
- * \file repetition.cpp
+ * \file repetition.c
  * \brief Implementation of repetition codes
  */
 
-#include <stdlib.h>
+#include <stdlib.h> // TODO remove
 
 #include "repetition.h"
+
+#include "parameters.h"
 
 /**
  * \fn void repetition_code_encode(uint8_t* em, uint8_t* m)
@@ -17,33 +19,33 @@
  * \param[out] em Pointer to an array that is the code word
  * \param[in] m Pointer to an array that is the message
  */
-void repetition_code_encode(uint8_t* em, uint8_t* m) {
-  uint8_t tmp [PARAM_N1N2] = {0};
-  uint8_t val;
-  
-  for(uint16_t i = 0; i < (VEC_N1_SIZE_BYTES - 1); ++i)  {
-    for(uint8_t j = 0; j < 8; ++j) {
-      val = (m[i]  >> j) & 0x01;
-      if(val){
-        uint32_t index = (i * 8 + j) * PARAM_N2; 
-        for (uint8_t k = 0; k < PARAM_N2; ++k) {
-          tmp[index + k] = 1;
+void repetition_code_encode(uint8_t *em, uint8_t *m) {
+    uint8_t tmp [PARAM_N1N2] = {0};
+    uint8_t val;
+
+    for (uint16_t i = 0; i < (VEC_N1_SIZE_BYTES - 1); ++i)  {
+        for (uint8_t j = 0; j < 8; ++j) {
+            val = (m[i]  >> j) & 0x01;
+            if (val) {
+                uint32_t index = (i * 8 + j) * PARAM_N2;
+                for (uint8_t k = 0; k < PARAM_N2; ++k) {
+                    tmp[index + k] = 1;
+                }
+            }
         }
-      }
-    } 
-  }
-  
-  for(uint8_t j = 0; j < (PARAM_N1 % 8); ++j) {
-    uint8_t val = (m[VEC_N1_SIZE_BYTES - 1] >> j) & 0x01;
-    if(val){
-      uint32_t index = ((VEC_N1_SIZE_BYTES - 1) * 8 + j) * PARAM_N2; 
-      for(uint8_t k = 0; k < PARAM_N2; ++k) {
-        tmp[index + k] = 1;
-      }
     }
-  } 
-  
-  array_to_rep_codeword(em, tmp);
+
+    for (uint8_t j = 0; j < (PARAM_N1 % 8); ++j) {
+        uint8_t val = (m[VEC_N1_SIZE_BYTES - 1] >> j) & 0x01;
+        if (val) {
+            uint32_t index = ((VEC_N1_SIZE_BYTES - 1) * 8 + j) * PARAM_N2;
+            for (uint8_t k = 0; k < PARAM_N2; ++k) {
+                tmp[index + k] = 1;
+            }
+        }
+    }
+
+    array_to_rep_codeword(em, tmp);
 }
 
 /**
@@ -57,29 +59,29 @@ void repetition_code_encode(uint8_t* em, uint8_t* m) {
  * \param[out] m Pointer to an array that is the message
  * \param[in] em Pointer to an array that is the code word
  */
-void repetition_code_decode(uint8_t* m, uint8_t* em) {
-  int t = 0;
-  int k = 1;
-  int weight = 0;
-  for(uint16_t i = 0; i < VEC_N1N2_SIZE_BYTES; ++i) {
-    for(uint8_t j = 0; j < 8; ++j) {
-      if((em[i] >> j) & 0x01) {
-        weight ++;
-      } 
-      if(!(k % PARAM_N2)) {
-        if(weight >= (PARAM_T + 1)) {
-          int index = t / 8;
-          m[index] |= 0x01 << (t % 8);
-          weight = 0;
-          t++;
-        } else {
-        weight = 0;
-        t++;
+void repetition_code_decode(uint8_t *m, uint8_t *em) {
+    int t = 0;
+    int k = 1;
+    int weight = 0;
+    for (uint16_t i = 0; i < VEC_N1N2_SIZE_BYTES; ++i) {
+        for (uint8_t j = 0; j < 8; ++j) {
+            if ((em[i] >> j) & 0x01) {
+                weight ++;
+            }
+            if (!(k % PARAM_N2)) {
+                if (weight >= (PARAM_T + 1)) {
+                    int index = t / 8;
+                    m[index] |= 0x01 << (t % 8);
+                    weight = 0;
+                    t++;
+                } else {
+                    weight = 0;
+                    t++;
+                }
+            }
+            k++;
         }
-      }
-      k++;
     }
-  }
 }
 
 /**
@@ -87,16 +89,16 @@ void repetition_code_decode(uint8_t* m, uint8_t* em) {
  * \brief Parse an array to an compact array
  *
  * \param[out] o Pointer to an array
- * \param[in] v Pointer to an array 
+ * \param[in] v Pointer to an array
  */
-void array_to_rep_codeword(uint8_t* o, uint8_t* v) {
-  for(uint16_t i = 0 ; i < (VEC_N1N2_SIZE_BYTES - 1) ; ++i) {
-    for(uint8_t j = 0 ; j < 8 ; ++j) {
-      o[i] |= v[j + i * 8] << j;
+void array_to_rep_codeword(uint8_t *o, uint8_t *v) {
+    for (uint16_t i = 0 ; i < (VEC_N1N2_SIZE_BYTES - 1) ; ++i) {
+        for (uint8_t j = 0 ; j < 8 ; ++j) {
+            o[i] |= v[j + i * 8] << j;
+        }
     }
-  }
-  
-  for(uint8_t j = 0 ; j < PARAM_N1N2 % 8 ; ++j) {
-    o[VEC_N1N2_SIZE_BYTES - 1] |= ((uint8_t) v[j + 8 * (VEC_N1N2_SIZE_BYTES - 1)]) << j;
-  }
+
+    for (uint8_t j = 0 ; j < PARAM_N1N2 % 8 ; ++j) {
+        o[VEC_N1N2_SIZE_BYTES - 1] |= ((uint8_t) v[j + 8 * (VEC_N1N2_SIZE_BYTES - 1)]) << j;
+    }
 }
