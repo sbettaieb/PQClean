@@ -9,9 +9,9 @@
  * - [bod]:  Marco Bodrato. Towards Optimal Toom-Cook Multiplication for Univariate
  *           and Multivariate Polynomials in Characteristic 2 and 0. WAIFI 2007.
  */
-// FIXME There are some assumptions about the multiplicants being balanced. The
-// methods appear to work when a_len - 2 <= b_len <= a_len, but this has not
-// been rigourously tested.
+// FIXME There are implicit assumptions about the multiplicants being balanced.
+// The methods appear to work even when a_len == b_len + 2 or a_len == b_len + 1,
+// but this has not been rigourously tested.
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -42,13 +42,6 @@ void div_1_plus_W(word_t *c, size_t n);
 void mul_tc3w(word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len);
 void mul(word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len);
 void reduce(word_t *c);
-
-#ifdef GF2X_MAIN
-#include <stdio.h>
-#include <inttypes.h>
-#include <gf2x.h>
-void print_poly(const word_t *a, size_t a_len);
-#endif
 
 // c = 0
 void zero(word_t *c, size_t c_len) {
@@ -99,11 +92,6 @@ void mul_tc1(word_t *c, const word_t *a, size_t a_len, word_t b) {
 
     assert(c <= a+1 || a + a_len <= c);
 
-    // printf("mul_tc1\na: ");
-    // print_poly(a, a_len);
-    // printf("b: ");
-    // print_poly(&b, 1);
-
     memset(c, 0, (a_len + 1) * sizeof(word_t));
 
     // precompute
@@ -112,15 +100,9 @@ void mul_tc1(word_t *c, const word_t *a, size_t a_len, word_t b) {
         table[i+1] = table[i] ^ b;
     }
 
-    // printf("table:\n");
-    // for (size_t i = 0; i < 1<<PRE_BITS; i += 1) {
-    //     print_poly(table + i, 1);
-    // }
-
     for (size_t j = 0; j < a_len; ++j) {
         word_t aj = a[j];
 
-        // printf("word %zu\n", j);
         // multiply
         c[j] ^= table[aj & PRE_MASK];
         for (size_t i = PRE_BITS; i < WORD_BITS; i += PRE_BITS) {
@@ -128,20 +110,13 @@ void mul_tc1(word_t *c, const word_t *a, size_t a_len, word_t b) {
             c[j] ^= tmp << i;
             c[j+1] ^= tmp >> (WORD_BITS - i);
         }
-        // printf("c%zu: ", j); print_poly(c+j, 1);
-        // printf("c%zu: ", j+1); print_poly(c+j+1, 1);
 
         // repair (note the bug in [bgtz])
-        // printf("repair\n");
         for (size_t i = 1; i < PRE_BITS; ++i) {
             aj = (aj >> 1) & REPAIR_MASK;
-            // printf("a%zu: ", j); print_poly(&aj, 1);
             c[j+1] ^= aj & (-((b >> (WORD_BITS - i)) & 1));
-            // printf("c%zu: ", j+1); print_poly(c+j+1, 1);
         }
-        // printf("c%zu (repaired): ", j+1); print_poly(c+j+1, 1);
     }
-    // printf("c: "); print_poly(c, a_len+1);
 }
 
 // c := a * b
@@ -190,10 +165,6 @@ void mul_tc3w(word_t *c,
     // a == a0 + a1X + a2X**2
     // b == b0 + b1X + b2X**2
     
-// printf("TC3W: (%zu by %zu), split=%zu:\n", a_len, b_len, n);
-// printf("a: "); print_poly(a, a_len);
-// printf("b: "); print_poly(b, b_len);
-
     // notation: result [size] = ...
     
     // c0 [n+2] = a1*W + a2*W**2
@@ -201,88 +172,66 @@ void mul_tc3w(word_t *c,
     assign(c0 + 1, a + n, n);
     c0[n+1] = 0;
     add_inplace(c0 + 2, a + 2*n, a_len - 2*n);
-//printf("c0: "); print_poly(c0, n+2);
     // c4 [n+2] = b1*W + b2*W**2
     c4[0] = 0;
     assign(c4 + 1, b + n, n);
     c4[n+1] = 0;
     add_inplace(c4 + 2, b + 2*n, b_len - 2*n);
-//printf("c4: "); print_poly(c4, n+2);
     // c5 [n] = a0 + a1 + a2
     add(c5, a, n, a + n, n);
     add_inplace(c5, a + 2*n, a_len - 2*n);
-//printf("c5: "); print_poly(c5, n);
     // c2 [n] = b0 + b1 + b2
     add(c2, b, n, b + n, n);
     add_inplace(c2, b + 2*n, b_len - 2*n);
-//printf("c2: "); print_poly(c2, n);
     // c1 [2n] = c2 * c5
     mul(c1, c2, n, c5, n);
-//printf("c1: "); print_poly(c1, 2*n);
     // c5 [n+2] = c5 + c0
     c5[n] = 0;
     c5[n+1] = 0;
     add_inplace(c5, c0, n+2);
-//printf("c5: "); print_poly(c5, n+2);
     // c2 [n+2] = c2 + c4
     c2[n] = 0;
     c2[n+1] = 0;
     add_inplace(c2, c4, n+2);
-//printf("c2: "); print_poly(c2, n+2);
     // c0 [n+2] = c0 + a0
     add_inplace(c0, a, n);
-//printf("c0: "); print_poly(c0, n+2);
     // c4 [n+2] = c4 + b0
     add_inplace(c4, b, n);
-//printf("c4: "); print_poly(c4, n+2);
     // c3 [2n+4] = c2 * c5
     mul(c3, c2, n+2, c5, n+2);
-//printf("c3: "); print_poly(c3, 2*n+4);
     // c2 [2n+4] = c0 * c4
     mul(c2, c0, n+2, c4, n+2);
-//printf("c2: "); print_poly(c2, 2*n+4);
     // c0 [2n] = a0 * b0
     mul(c0, a, n, b, n);
-//printf("c0: "); print_poly(c0, 2*n);
     // c4 [c4_len] = a2 * b2
     mul(c4, a + 2*n, a_len-2*n, b + 2*n, b_len-2*n);
     c4_len = a_len + b_len - 4*n;
-//printf("c4: "); print_poly(c4, c4_len);
     // c3 [2n+2] = c3 + c2
     assert(c3[2*n+2] == c2[2*n+2] && c3[2*n+3] == c2[2*n+3]);
     add_inplace(c3, c2, 2*n+2);
-//printf("c3: "); print_poly(c3, 2*n+2);
     // c2 [2n+4] = c2 + c0
     add_inplace(c2, c0, 2*n);
-//printf("c2: "); print_poly(c2, 2*n+4);
     // c2 [2n+3] = c2 / W + c3
     assert(c2[0] == 0); // c2 is now at c2+1
     add_inplace(c2+1, c3, 2*n+2);
-//printf("c2: "); print_poly(c2+1, 2*n+3);
     // c2 [2n] = (c2 + (1 + W**3)c4) / (1 + W)
     assert((c4_len < 2*n-1 && (c2+1)[2*n+1] == 0) || (c2+1)[2*n+1] == c4[2*n-2]);
     assert((c4_len < 2*n   && (c2+1)[2*n+2] == 0) || (c2+1)[2*n+2] == c4[2*n-1]);
     add_inplace(c2+4, c4, c4_len);
     add_inplace(c2+1, c4, c4_len);
     div_1_plus_W(c2+1, 2*n+1);
-//printf("c2: "); print_poly(c2+1, 2*n);
     // c1 [2n] = c1 + c0
     add_inplace(c1, c0, 2*n);
-//printf("c1: "); print_poly(c1, 2*n);
     // c3 [2n+2] = c3 + c1
     add_inplace(c3, c1, 2*n);
-//printf("c3: "); print_poly(c3, 2*n+2);
     // c3 [2n] = c3 / (W**2 + W)
     assert(c3[0] == 0); // c3 is now at c3+1
     div_1_plus_W(c3+1, 2*n+1);
-//printf("c3: "); print_poly(c3+1, 2*n);
     // c1 [2n] = c1 + c2 + c4
     add_inplace(c1, c2+1, 2*n);
     add_inplace(c1, c4, c4_len);
-//printf("c1: "); print_poly(c1, 2*n);
     // c2 [2n] = c2 + c3
     add_inplace(c2+1, c3+1, 2*n);
-//printf("c2: "); print_poly(c2+1, 2*n);
     // c = c0 + c1*X + c2*X**2 + c3*X**3 + c4*X**4
     assign(c, c0, 2*n);
     assign(c + 2*n, c2+1, 2*n);
@@ -294,9 +243,6 @@ void mul_tc3w(word_t *c,
 // generic multiplication function: depending on the sizes of the
 // input it will call the fastest function for that size.
 void mul(word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len) {
-    //printf("mul (%zu by %zu)\n", a_len, b_len);
-    //assert(a_len == b_len || a_len == b_len + 1);
-
     if (b_len == 0) {
         zero(c, a_len); // TODO: inefficient, better have a separate subroutine so this doesn't happen.
     } else if (b_len == 1) {
@@ -348,99 +294,4 @@ void ntl_cyclic_product(uint8_t* o, const uint8_t* v1, const uint8_t* v2) {
 
     memcpy(o, c, VEC_N_SIZE_BYTES);
 }
-
-#ifdef GF2X_MAIN
-
-void print_poly(const word_t *a, size_t a_len) {
-    for (size_t i = 0; i < a_len; ++i) {
-        printf("%016"PRIx64" ", a[i]);
-        //printf("%02"PRIx8" ", a[i]);
-    }
-    printf("\n");
-}
-
-#include "common/randombytes.h"
-
-void random_poly(word_t *a, size_t a_len) {
-    randombytes((uint8_t *)a, a_len * sizeof(word_t));
-}
-
-int poly_eq(word_t *a, word_t *b, size_t n) {
-    for (size_t i = 0; i < n; ++i) {
-        if (a[i] != b[i]) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-#define N 20
-
-int test_reduce() {
-
-#include "test_vector.c"
-
-    word_t aw[N_WORDS], bw[N_WORDS], cw[2*N_WORDS], dw[N_WORDS];
-    word_t res[2*N_WORDS];
-    int failed = 0;
-
-    for (size_t i = 0; i < 10; ++i) {
-        memcpy(aw, a[i], VEC_N_SIZE_BYTES);
-        memcpy(bw, b[i], VEC_N_SIZE_BYTES);
-        memcpy(cw, c[i], 2*VEC_N_SIZE_BYTES);
-        memcpy(dw, d[i], VEC_N_SIZE_BYTES);
-        mul(res, aw, N_WORDS, bw, N_WORDS);
-        if (!poly_eq(res, cw, 2*N_WORDS)) {
-            failed = 1;
-            printf("Test failed\na: "); print_poly(aw, N_WORDS);
-            printf("b: "); print_poly(bw, N_WORDS);
-            printf("mul : "); print_poly(res, 2*N_WORDS);
-            printf("gf2x: "); print_poly(cw, 2*N_WORDS);
-        }
-        reduce(res);
-        if (!poly_eq(res, dw, N_WORDS)) {
-            failed = 1;
-            printf("Test failed\nres : "); print_poly(res, N_WORDS);
-            printf("gf2x: "); print_poly(dw, N_WORDS);
-            printf("diff: ");
-            for (size_t j = 0; j < N_WORDS; ++j) {
-                printf("%016"PRIx64" ", res[j] ^ dw[j]);
-            }
-            printf("\n");
-        }
-    }
-
-    return failed;
-}
-
-int main(int argc, char *argv[]) {
-    word_t a[N+1], b[N], cw[2*N+1];
-    unsigned long cl[2*N+1];
-    int failed = 0;
-
-    for (size_t i = 0; i < 20; ++i) {
-        for (size_t nb = 1; nb < N; ++nb) {
-            for (size_t na = nb; na <= nb+2; ++na) {
-                random_poly(a, na);
-                random_poly(b, nb);
-                mul(cw, a, na, b, nb);
-                gf2x_mul(cl, a, na, b, nb);
-                if (!poly_eq(cw, cl, na+nb)) {
-                    failed = 1;
-                    printf("Test failed:\na: "); print_poly(a, na);
-                    printf("b: "); print_poly(b, nb);
-                    printf("MUL : "); print_poly(cw, na+nb);
-                    printf("GF2X: "); print_poly(cl, na+nb);
-                }
-            }
-        }
-    }
-    failed |= test_reduce();
-    if (!failed) {
-        printf("All tests succeeded\n");
-    }
-
-    return EXIT_SUCCESS;
-}
-#endif
 

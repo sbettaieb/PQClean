@@ -3,12 +3,11 @@
 //
 //  Created by Bassham, Lawrence E (Fed) on 8/29/17.
 //  Copyright © 2017 Bassham, Lawrence E (Fed). All rights reserved.
+//  Modified for PQClean by Sebastian Verschoor
 //
 
-#ifndef rng_h
-#define rng_h
-
-#include <stdio.h>
+#ifndef NISTSEEDEXPANDER_H 
+#define NISTSEEDEXPANDER_H
 
 #define RNG_SUCCESS      0
 #define RNG_BAD_MAXLEN  -1
@@ -23,18 +22,6 @@ typedef struct {
     unsigned char   ctr[16];
 } AES_XOF_struct;
 
-typedef struct {
-    unsigned char   Key[32];
-    unsigned char   V[16];
-    int             reseed_counter;
-} AES256_CTR_DRBG_struct;
-
-
-void
-AES256_CTR_DRBG_Update(unsigned char *provided_data,
-                       unsigned char *Key,
-                       unsigned char *V);
-
 int
 seedexpander_init(AES_XOF_struct *ctx,
                   unsigned char *seed,
@@ -44,12 +31,4 @@ seedexpander_init(AES_XOF_struct *ctx,
 int
 seedexpander(AES_XOF_struct *ctx, unsigned char *x, unsigned long xlen);
 
-void
-randombytes_init(unsigned char *entropy_input,
-                 unsigned char *personalization_string);
-//                 int security_strength);
-
-int
-local_randombytes(unsigned char *x, unsigned long long xlen);
-
-#endif /* rng_h */
+#endif /* NISTSEEDEXPANDER_H */

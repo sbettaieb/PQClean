@@ -2,18 +2,11 @@
 
 LIB=libhqc-128-1-cca2_leaktime.a
 HEADERS=api.h bch.h gf2x.h hqc.h parameters.h parsing.h repetition.h tensor.h vector.h
-OBJECTS=bch.o gf2x.o hqc.o kem.o parsing.o repetition.o tensor.o vector.o lib/rng/rng.o
-
-# TODO: remove these later
-EXTRAFLAGS=-UGF2X_MAIN -Ilib/rng
+OBJECTS=bch.o gf2x.o hqc.o kem.o parsing.o repetition.o tensor.o vector.o
 
 CFLAGS=-O3 -Wall -Wextra -Wpedantic -Wvla -Werror -Wmissing-prototypes -Wredundant-decls -std=c99 -I../../../common $(EXTRAFLAGS)
 
 all: $(LIB)
-
-# TODO: remove this (testing) target
-gf2x: gf2x.c gf2x.h
-	$(CC) -DGF2X_MAIN -g $< -I../../../ ../../../common/randombytes.c -o $@ -lgf2x
 
 lib/rng/rng.o: lib/rng/rng.c lib/rng/rng.h
 	$(CC) $(CFLAGS) -c -o $@ $<

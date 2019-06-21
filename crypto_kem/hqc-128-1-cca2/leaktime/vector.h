@@ -13,7 +13,8 @@
 #include <inttypes.h>
 
 #include "parameters.h"
-#include "rng.h"
+#include "randombytes.h"
+#include "nistseedexpander.h"
 
 #define BITMASK(a, size) ((1UL << (a % size)) - 1) /*!< Create a mask*/
 
