@@ -9,6 +9,9 @@
 #ifndef NISTSEEDEXPANDER_H 
 #define NISTSEEDEXPANDER_H
 
+#include <stdint.h>
+#include <stddef.h>
+
 #define RNG_SUCCESS      0
 #define RNG_BAD_MAXLEN  -1
 #define RNG_BAD_OUTBUF  -2
