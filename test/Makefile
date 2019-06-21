@@ -15,15 +15,10 @@ COMMON_HEADERS=$(COMMON_DIR)/*.h
 DEST_DIR=../bin
 
 # This -Wall was supported by the European Commission through the ERC Starting Grant 805031 (EPOQUE)
-# FIXME: removed -std=c99 and -Wmissing-prototypes
-CFLAGS=-O3 -Wall -Wextra -Wpedantic -Wvla -Werror \
-	   -Wundef -Wshadow -Wcast-align -Wpointer-arith \
+CFLAGS=-O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
+	   -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes\
 	   -fstrict-aliasing -fno-common -pipe \
 	   -I$(COMMON_DIR) $(EXTRAFLAGS)
-
-#TODO remove this (remove LDFLAGS from recipes as well)
-CC=g++
-LDFLAGS=-lntl -lgf2x -lgmp -pthread
 
 # Number of tests run for functests
 NTESTS=1
@@ -58,19 +53,19 @@ $(DEST_DIR)/test_common_%: common/%.c $(COMMON_FILES)
 
 $(DEST_DIR)/functest_$(SCHEME)_$(IMPLEMENTATION): build-scheme crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/randombytes.c $(COMMON_HEADERS)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DNTESTS=$(NTESTS) -DPQCLEAN_NAMESPACE=PQCLEAN_$(SCHEME_UPPERCASE)_$(IMPLEMENTATION_UPPERCASE) -I$(SCHEME_DIR) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME)_$(IMPLEMENTATION) $(LDFLAGS)
+	$(CC) $(CFLAGS) -DNTESTS=$(NTESTS) -DPQCLEAN_NAMESPACE=PQCLEAN_$(SCHEME_UPPERCASE)_$(IMPLEMENTATION_UPPERCASE) -I$(SCHEME_DIR) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME)_$(IMPLEMENTATION)
 
 $(DEST_DIR)/testvectors_$(SCHEME)_$(IMPLEMENTATION): build-scheme crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(COMMON_DIR)/notrandombytes.c $(COMMON_HEADERS)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DPQCLEAN_NAMESPACE=PQCLEAN_$(SCHEME_UPPERCASE)_$(IMPLEMENTATION_UPPERCASE) -I$(SCHEME_DIR) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(COMMON_DIR)/notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME)_$(IMPLEMENTATION) $(LDFLAGS)
+	$(CC) $(CFLAGS) -DPQCLEAN_NAMESPACE=PQCLEAN_$(SCHEME_UPPERCASE)_$(IMPLEMENTATION_UPPERCASE) -I$(SCHEME_DIR) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(COMMON_DIR)/notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME)_$(IMPLEMENTATION)
 
 $(DEST_DIR)/printparams_$(SCHEME)_$(IMPLEMENTATION): build-scheme crypto_$(TYPE)/printparams.c
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DPQCLEAN_NAMESPACE=PQCLEAN_$(SCHEME_UPPERCASE)_$(IMPLEMENTATION_UPPERCASE) -I$(SCHEME_DIR) crypto_$(TYPE)/printparams.c $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) -DPQCLEAN_NAMESPACE=PQCLEAN_$(SCHEME_UPPERCASE)_$(IMPLEMENTATION_UPPERCASE) -I$(SCHEME_DIR) crypto_$(TYPE)/printparams.c -o $@
 
 $(DEST_DIR)/nistkat_$(SCHEME)_$(IMPLEMENTATION): build-scheme crypto_$(TYPE)/nistkat.c $(COMMON_FILES) $(COMMON_DIR)/nistkatrng.c $(COMMON_HEADERS)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DPQCLEAN_NAMESPACE=PQCLEAN_$(SCHEME_UPPERCASE)_$(IMPLEMENTATION_UPPERCASE) -I$(SCHEME_DIR) crypto_$(TYPE)/nistkat.c $(COMMON_FILES) $(COMMON_DIR)/nistkatrng.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME)_$(IMPLEMENTATION) $(LDFLAGS)
+	$(CC) $(CFLAGS) -DPQCLEAN_NAMESPACE=PQCLEAN_$(SCHEME_UPPERCASE)_$(IMPLEMENTATION_UPPERCASE) -I$(SCHEME_DIR) crypto_$(TYPE)/nistkat.c $(COMMON_FILES) $(COMMON_DIR)/nistkatrng.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME)_$(IMPLEMENTATION)
 
 .PHONY: clean
 clean:
