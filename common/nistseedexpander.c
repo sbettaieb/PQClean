@@ -72,7 +72,7 @@ seedexpander(AES_XOF_struct *ctx, uint8_t *x, size_t xlen)
     
     offset = 0;
     while ( xlen > 0 ) {
-        if ( (int)xlen <= (16-ctx->buffer_pos) ) { // buffer has what we need
+        if ( xlen <= (16-ctx->buffer_pos) ) { // buffer has what we need
             memcpy(x+offset, ctx->buffer+ctx->buffer_pos, xlen);
             ctx->buffer_pos += xlen;
             
@@ -88,7 +88,7 @@ seedexpander(AES_XOF_struct *ctx, uint8_t *x, size_t xlen)
         ctx->buffer_pos = 0;
         
         //increment the counter
-        for (int i=15; i>=12; i--) {
+        for (size_t i=15; i>=12; i--) {
             if ( ctx->ctr[i] == 0xff )
                 ctx->ctr[i] = 0x00;
             else {

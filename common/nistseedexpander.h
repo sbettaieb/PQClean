@@ -15,20 +15,20 @@
 #define RNG_BAD_REQ_LEN -3
 
 typedef struct {
-    unsigned char   buffer[16];
-    int             buffer_pos;
-    unsigned long   length_remaining;
-    unsigned char   key[32];
-    unsigned char   ctr[16];
+    uint8_t buffer[16];
+    size_t  buffer_pos;
+    size_t  length_remaining;
+    uint8_t key[32];
+    uint8_t ctr[16];
 } AES_XOF_struct;
 
 int
 seedexpander_init(AES_XOF_struct *ctx,
-                  unsigned char *seed,
-                  unsigned char *diversifier,
-                  unsigned long maxlen);
+                  uint8_t *seed,
+                  uint8_t *diversifier,
+                  size_t maxlen);
 
 int
-seedexpander(AES_XOF_struct *ctx, unsigned char *x, unsigned long xlen);
+seedexpander(AES_XOF_struct *ctx, uint8_t *x, size_t xlen);
 
 #endif /* NISTSEEDEXPANDER_H */
