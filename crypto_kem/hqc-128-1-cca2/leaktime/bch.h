@@ -65,7 +65,7 @@ void bch_code_encode(uint8_t *em, uint8_t *m);
 
 void message_to_array(uint8_t *o, uint8_t *v);
 
-void get_generator_poly(uint8_t *g);
+//void get_generator_poly(uint8_t *g);
 
 void lfsr_encoder(uint8_t *em, uint8_t *g, uint8_t *m);
 

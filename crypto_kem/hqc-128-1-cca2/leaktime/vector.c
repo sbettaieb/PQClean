@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h> // TODO remove
-#include <stdio.h> // TODO remove
 
 #include "vector.h"
 #include "parameters.h"
@@ -166,15 +165,3 @@ void vect_resize(uint8_t *o, uint32_t size_o, uint8_t *v, uint32_t size_v) {
     }
 }
 
-/**
- * \fn void vect_print(uint8_t* v, uint32_t size)
- * \brief Prints a given number of bytes
- *
- * \param[in] v Pointer to an array of bytes
- * \param[in] size Integer that is number of bytes to be displayed
- */
-void vect_print(uint8_t *v, uint32_t size) {
-    for (uint32_t i = 0; i < size; ++i) {
-        printf("%02x", v[i]);
-    }
-}

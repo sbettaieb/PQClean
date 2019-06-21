@@ -3,8 +3,6 @@
  * \brief Implementation of tensor code
  */
 
-#include <stdio.h> // TODO remove
-
 #include "tensor.h"
 
 #include "bch.h"
@@ -25,13 +23,6 @@ void tensor_code_encode(uint8_t *em, uint8_t *m) {
     uint8_t tmp[VEC_N1_SIZE_BYTES] = {0};
     bch_code_encode(tmp, m);
     repetition_code_encode(em, tmp);
-
-    #ifdef VERBOSE
-    printf("\n\nBCH code word: ");
-    vect_print(tmp, VEC_N1_SIZE_BYTES);
-    printf("\n\nTensor code word: ");
-    vect_print(em, VEC_N1N2_SIZE_BYTES);
-    #endif
 }
 
 /**
@@ -45,9 +36,4 @@ void tensor_code_decode(uint8_t *m, uint8_t *em) {
     uint8_t tmp[VEC_N1_SIZE_BYTES] = {0};
     repetition_code_decode(tmp, em);
     bch_code_decode(m, tmp);
-
-    #ifdef VERBOSE
-    printf("\n\nRepetition decoding result (the input for the BCH decoding algorithm): ");
-    vect_print(tmp, VEC_N1_SIZE_BYTES);
-    #endif
 }

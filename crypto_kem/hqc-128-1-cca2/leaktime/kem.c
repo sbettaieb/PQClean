@@ -5,7 +5,6 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h> // TODO: remove
 #include <stdlib.h> // TODO: remove
 
 #include "api.h"
@@ -32,10 +31,6 @@
  * return 0 if keygen is successful
  */
 int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_keypair(unsigned char *pk, unsigned char *sk) {
-    #ifdef VERBOSE
-    printf("\n\n\n\n### KEYGEN ###");
-    #endif
-
     hqc_pke_keygen(pk, sk);
     return 0;
 }
@@ -50,10 +45,6 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_keypair(unsigned char *pk, unsigned 
  * return 0 if encapsulation is successful
  */
 int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_enc(unsigned char *ct, unsigned char *ss, const unsigned char *pk) {
-    #ifdef VERBOSE
-    printf("\n\n\n\n### ENCAPS ###");
-    #endif
-
     // Computing m
     uint8_t m[VEC_K_SIZE_BYTES] = {0};
     vect_set_random_from_randombytes(m);
@@ -71,19 +62,6 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_enc(unsigned char *ct, unsigned char
     // Computing theta
     unsigned char theta[SEED_BYTES];
     seedexpander(G_seedexpander, theta, SEED_BYTES);
-
-    #ifdef VERBOSE
-    printf("\n\npk: ");
-    for (int i = 0 ; i < PUBLIC_KEY_BYTES ; ++i) {
-        printf("%02x", pk[i]);
-    }
-    printf("\n\nm: ");
-    vect_print(m, VEC_K_SIZE_BYTES);
-    printf("\n\ntheta: ");
-    for (int i = 0 ; i < SEED_BYTES ; ++i) {
-        printf("%02x", theta[i]);
-    }
-    #endif
 
     // Encrypting m
     uint8_t u [VEC_N_SIZE_BYTES] = {0};
@@ -104,21 +82,6 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_enc(unsigned char *ct, unsigned char
     // Computing ciphertext
     hqc_ciphertext_to_string(ct, u, v, d);
 
-    #ifdef VERBOSE
-    printf("\n\nd: ");
-    for (int i = 0 ; i < SHA512_BYTES ; ++i) {
-        printf("%02x", d[i]);
-    }
-    printf("\n\nciphertext: ");
-    for (int i = 0 ; i < CIPHERTEXT_BYTES ; ++i) {
-        printf("%02x", ct[i]);
-    }
-    printf("\n\nsecret 1: ");
-    for (int i = 0 ; i < SHARED_SECRET_BYTES ; ++i) {
-        printf("%02x", ss[i]);
-    }
-    #endif
-
     free(G_seedexpander);
     return 0;
 }
@@ -133,10 +96,6 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_enc(unsigned char *ct, unsigned char
  * return 0 if decapsulation is successful, -1 otherwise
  */
 int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_dec(unsigned char *ss, const unsigned char *ct, const unsigned char *sk) {
-    #ifdef VERBOSE
-    printf("\n\n\n\n### DECAPS ###");
-    #endif
-
     // Retrieving u, v and d from ciphertext
     uint8_t u [VEC_N_SIZE_BYTES] = {0};
     uint8_t v [VEC_N1N2_SIZE_BYTES] = {0};
@@ -188,23 +147,7 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_dec(unsigned char *ss, const unsigne
         abort = 1;
     }
 
-    #ifdef VERBOSE
-    printf("\nu2: ");
-    vect_print(u2, VEC_N_SIZE_BYTES);
-    printf("\nv2: ");
-    vect_print(v2, VEC_N1N2_SIZE_BYTES);
-    printf("\n\nd2: ");
-    for (int i = 0 ; i < SHA512_BYTES ; ++i) {
-        printf("%02x", d2[i]);
-    }
-    #endif
-
     if (abort == 1) {
-        #ifdef VERBOSE
-        printf("\n\nCheck result : ABORT");
-        printf("\n\n## Checking Ciphertext- End ##");
-        #endif
-
         memset(ss, 0, SHARED_SECRET_BYTES);
         return -1;
     }
@@ -215,15 +158,6 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_dec(unsigned char *ss, const unsigne
     memcpy(mc + VEC_K_SIZE_BYTES, u, VEC_N_SIZE_BYTES);
     memcpy(mc + VEC_K_SIZE_BYTES + VEC_N_SIZE_BYTES, v, VEC_N1N2_SIZE_BYTES);
     sha512(ss, mc, VEC_K_SIZE_BYTES + VEC_N_SIZE_BYTES + VEC_N1N2_SIZE_BYTES);
-
-    #ifdef VERBOSE
-    printf("\n\nCheck result: SUCCESS");
-    printf("\n\nsecret2: ");
-    for (int i = 0 ; i < SHARED_SECRET_BYTES ; ++i) {
-        printf("%02x", ss[i]);
-    }
-    printf("\n\n## Checking Ciphertext- End ##");
-    #endif
 
     free(G_seedexpander);
     return 0;
