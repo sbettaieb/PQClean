@@ -3,8 +3,6 @@
  * \brief Implementation of repetition codes
  */
 
-#include <stdlib.h> // TODO remove
-
 #include "repetition.h"
 
 #include "parameters.h"

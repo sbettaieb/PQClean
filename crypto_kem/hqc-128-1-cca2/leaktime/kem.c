@@ -5,7 +5,6 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdlib.h> // TODO: remove
 
 #include "api.h"
 
@@ -56,12 +55,12 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_enc(unsigned char *ct, unsigned char
     }
     unsigned char seed_G[VEC_K_SIZE_BYTES];
     memcpy(seed_G, m, VEC_K_SIZE_BYTES);
-    AES_XOF_struct *G_seedexpander = (AES_XOF_struct *) malloc(sizeof(AES_XOF_struct));
-    seedexpander_init(G_seedexpander, seed_G, diversifier_bytes, SEEDEXPANDER_MAX_LENGTH);
+    AES_XOF_struct G_seedexpander;
+    seedexpander_init(&G_seedexpander, seed_G, diversifier_bytes, SEEDEXPANDER_MAX_LENGTH);
 
     // Computing theta
     unsigned char theta[SEED_BYTES];
-    seedexpander(G_seedexpander, theta, SEED_BYTES);
+    seedexpander(&G_seedexpander, theta, SEED_BYTES);
 
     // Encrypting m
     uint8_t u [VEC_N_SIZE_BYTES] = {0};
@@ -82,7 +81,6 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_enc(unsigned char *ct, unsigned char
     // Computing ciphertext
     hqc_ciphertext_to_string(ct, u, v, d);
 
-    free(G_seedexpander);
     return 0;
 }
 
@@ -117,12 +115,12 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_dec(unsigned char *ss, const unsigne
     }
     unsigned char seed_G[VEC_K_SIZE_BYTES];
     memcpy(seed_G, m, VEC_K_SIZE_BYTES);
-    AES_XOF_struct *G_seedexpander = (AES_XOF_struct *) malloc(sizeof(AES_XOF_struct));
-    seedexpander_init(G_seedexpander, seed_G, diversifier_bytes, SEEDEXPANDER_MAX_LENGTH);
+    AES_XOF_struct G_seedexpander;
+    seedexpander_init(&G_seedexpander, seed_G, diversifier_bytes, SEEDEXPANDER_MAX_LENGTH);
 
     // Computing theta
     unsigned char theta[SEED_BYTES];
-    seedexpander(G_seedexpander, theta, SEED_BYTES);
+    seedexpander(&G_seedexpander, theta, SEED_BYTES);
 
     // Encrypting m'
     uint8_t u2 [VEC_N_SIZE_BYTES] = {0};
@@ -159,6 +157,5 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_dec(unsigned char *ss, const unsigne
     memcpy(mc + VEC_K_SIZE_BYTES + VEC_N_SIZE_BYTES, v, VEC_N1N2_SIZE_BYTES);
     sha512(ss, mc, VEC_K_SIZE_BYTES + VEC_N_SIZE_BYTES + VEC_N1N2_SIZE_BYTES);
 
-    free(G_seedexpander);
     return 0;
 }

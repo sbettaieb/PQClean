@@ -1,5 +1,5 @@
 /**
- * \file bch.cpp
+ * \file bch.c
  * \brief Implementation of BCH codes
  */
 
@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdlib.h> // TODO remove
 
 #include "bch.h"
 
@@ -60,14 +59,14 @@ int16_t gf_mod(int16_t i) {
 void get_generator_poly(uint8_t *g);
 void get_generator_poly(uint8_t *g) {
     // The generator polynomial g(x) of the BCH code
-    uint8_t tmp[(PARAM_G + 7)/8] = { 0xDA, 0x15, 0xFB, 0x7C, 0x96, 0x9C, 0xE2,
-        0xAC, 0xA4, 0x7F, 0x3D, 0x5A, 0x5C, 0x78, 0xBD, 0x3D, 0x13, 0xE8, 0xB1,
-        0x48, 0xD5, 0xB3, 0x94, 0x9A, 0x18, 0x5B, 0x47, 0x59, 0xB1, 0x62, 0x04,
-        0x32, 0x33, 0x89, 0xE0, 0xCB, 0xF7, 0x33, 0xE1, 0x75, 0x0C, 0x22, 0xAC,
-        0x58, 0x93, 0x29, 0xE6, 0x6B, 0x00, 0xB0, 0x35, 0x07, 0x5B, 0xDD, 0xBE,
-        0x4C, 0x0A, 0x0B, 0xE7, 0x0B, 0xC9, 0xF0, 0x02, 0xB4, 0xB0, 0x7A, 0x42,
-        0x08
-    };
+    uint8_t tmp[(PARAM_G + 7) / 8] = { 0xDA, 0x15, 0xFB, 0x7C, 0x96, 0x9C, 0xE2,
+                                       0xAC, 0xA4, 0x7F, 0x3D, 0x5A, 0x5C, 0x78, 0xBD, 0x3D, 0x13, 0xE8, 0xB1,
+                                       0x48, 0xD5, 0xB3, 0x94, 0x9A, 0x18, 0x5B, 0x47, 0x59, 0xB1, 0x62, 0x04,
+                                       0x32, 0x33, 0x89, 0xE0, 0xCB, 0xF7, 0x33, 0xE1, 0x75, 0x0C, 0x22, 0xAC,
+                                       0x58, 0x93, 0x29, 0xE6, 0x6B, 0x00, 0xB0, 0x35, 0x07, 0x5B, 0xDD, 0xBE,
+                                       0x4C, 0x0A, 0x0B, 0xE7, 0x0B, 0xC9, 0xF0, 0x02, 0xB4, 0xB0, 0x7A, 0x42,
+                                       0x08
+                                     };
 
     for (int i = 0; i < (PARAM_G + 7) / 8; ++i) {
         for (int j = 0; j < 8; ++j) {
@@ -204,22 +203,25 @@ void array_to_codeword(uint8_t *v, uint8_t *c) {
 void bch_code_decode(uint8_t *m, uint8_t *em) {
     // Generate Galois Field GF(2^10) using the primitive polynomial defined in PARAM_POLY
     // GF(2^10) is represented by the lookup tables (Log Anti-Log tables)
-    gf_tables *tables = gf_tables_init();
-    gf_generation(tables);
+    gf_tables tables;
+    gf_tables_init(&tables);
+    gf_generation(&tables);
 
     // Calculate the 2 * PARAM_DELTA syndromes
-    syndrome_set *synd_set = syndrome_init();
-    syndrome_gen(synd_set, tables, em);
+    syndrome_set synd_set;
+    syndrome_init(&synd_set);
+    syndrome_gen(&synd_set, &tables, em);
 
     // Using the simplified Berlekamp's algorithm we compute the error location polynomial sigma(x)
-    sigma_poly *sigma = sigma_poly_init(2 * PARAM_DELTA);
-    get_error_location_poly(sigma, tables, synd_set);
+    sigma_poly sigma;
+    sigma_poly_init(&sigma);
+    get_error_location_poly(&sigma, &tables, &synd_set);
 
     // Compute the error location numbers using the Chien Search algorithm
     uint16_t error_pos [PARAM_DELTA];
     memset(error_pos, 0, PARAM_DELTA * 2);
     uint16_t size = 0;
-    chien_search(error_pos, &size, tables, sigma);
+    chien_search(error_pos, &size, &tables, &sigma);
 
     // Compute the error polynomial
     uint8_t e[VEC_N1_SIZE_BYTES] = {0};
@@ -231,29 +233,16 @@ void bch_code_decode(uint8_t *m, uint8_t *em) {
 
     // Find the message from the decoded code word
     message_from_codeword(m, tmp);
-
-    gf_tables_clear(tables);
-    syndrome_clear(synd_set);
-    sigma_poly_clear(sigma);
 }
 
 /**
- * \fn gf_tables* gf_tables_init()
+ * \fn void gf_tables_init(gf_tables *tables)
  * \brief Initializes a Galois Field Log and Anti-Log tables
  *
- * This function is used to initialize gf_tables structure by allocating the necessary
- * memory for the Galois Field Log and Anti-Log tables.
- *
- * \return a pointer to a gf_tables
+ * This function is used to initialize gf_tables structure
  */
-gf_tables *gf_tables_init() {
-    gf_tables *tables = (gf_tables *) malloc(sizeof(gf_tables));
-
-    tables->size = PARAM_GF_MUL_ORDER + 1;
-    tables->log_tab = (int16_t *) malloc((tables->size) * sizeof(int16_t));
-    tables->antilog_tab = (int16_t *) malloc((tables->size) * sizeof(int16_t));
-
-    return tables;
+void gf_tables_init(gf_tables *tables) {
+    tables->size = PARAM_GF_MUL_ORDER + 1; // TODO can size be removed?
 }
 
 /**
@@ -294,20 +283,14 @@ void gf_generation(gf_tables *gf_tables) {
 }
 
 /**
- * \fn syndrome_set* syndrome_init()
+ * \fn void syndrome_init(syndrome_set *synd_set)
  * \brief Initializes a syndrome_set structure
  *
- * This function is used to initialize syndrome_set structure by allocating the necessary
- * memory to store a set of syndromes of a BCH code.
- *
- * \return a pointer to a syndrome_set
+ * This function is used to initialize syndrome_set structure
  */
-syndrome_set *syndrome_init() {
-    syndrome_set *synd_set = (syndrome_set *) malloc(sizeof(syndrome_set));
-    synd_set->size = 2 * PARAM_DELTA;
-    synd_set->tab = (int16_t *) calloc((synd_set->size), sizeof(int16_t));
-
-    return synd_set;
+void syndrome_init(syndrome_set *synd_set) {
+    synd_set->size = 2 * PARAM_DELTA; // TODO can size be removed?
+    memset(synd_set->tab, 0, 2 * PARAM_DELTA * sizeof(int16_t));
 }
 
 /**
@@ -344,21 +327,14 @@ void syndrome_gen(syndrome_set *synd_set, gf_tables *tables, uint8_t *v) {
 }
 
 /**
- * \fn sigma_poly* sigma_poly_init(int16_t dim)
+ * \fn void sigma_poly_init(sigma_poly *poly)
  * \brief Initializes a structure that can store a polynomial having coordinates in \f$ GF(2^{10}) \f$
  *
- * This function is used to initialize sigma_poly structure by allocating the necessary
- * memory.
- *
- * \param[in] dim Integer that is the size of polynomial
- * \return a pointer to a sigma_poly
+ * This function is used to initialize sigma_poly structure
  */
-sigma_poly *sigma_poly_init(int16_t dim) {
-    sigma_poly *poly = (sigma_poly *) malloc(sizeof(sigma_poly));
-    poly->dim = dim;
-    poly->value = (int16_t *) calloc(dim, sizeof(int16_t));
-
-    return poly;
+void sigma_poly_init(sigma_poly *poly) {
+    poly->dim = 2 * PARAM_DELTA;
+    memset(poly->value, 0, 2 * PARAM_DELTA * sizeof(int16_t));
 }
 
 /**
@@ -377,12 +353,13 @@ void get_error_location_poly(sigma_poly *sigma, gf_tables *tables, syndrome_set 
     // Laurie L. Joiner and John J. Komo, the comments are following their terminology
 
     uint32_t mu, tmp, l, d_rho = 1, d = synd_set->tab[0];
-    sigma_poly *sigma_rho = sigma_poly_init(2 * PARAM_DELTA);
-    sigma_poly *sigma_copy = sigma_poly_init(2 * PARAM_DELTA);
+    sigma_poly sigma_rho, sigma_copy;
+    sigma_poly_init(&sigma_rho);
+    sigma_poly_init(&sigma_copy);
     int k, pp = -1;
     // initializations
-    sigma_rho->deg = 0;
-    sigma_rho->value[0] = 1;
+    sigma_rho.deg = 0;
+    sigma_rho.value[0] = 1;
     sigma->deg = 0;
     sigma->value[0] = 1;
 
@@ -390,22 +367,22 @@ void get_error_location_poly(sigma_poly *sigma, gf_tables *tables, syndrome_set 
         // Step (2) in Joinder and Komo algorithm
         if (d) {
             k = 2 * mu - pp;
-            sigma_poly_copy(sigma_copy, sigma);
+            sigma_poly_copy(&sigma_copy, sigma);
             // Compute d_mu * d__rho^(-1)
             tmp = gf_get_log(tables, d) + PARAM_GF_MUL_ORDER - gf_get_log(tables, d_rho);
             // Compute sigma(mu+1)[x]
-            for (int i = 0; i <= sigma_rho->deg; i++) {
-                if (sigma_rho->value[i]) {
-                    l = gf_get_log(tables, sigma_rho->value[i]);
+            for (int i = 0; i <= sigma_rho.deg; i++) {
+                if (sigma_rho.value[i]) {
+                    l = gf_get_log(tables, sigma_rho.value[i]);
                     sigma->value[i + k] ^= gf_get_antilog(tables, (tmp + l) % PARAM_GF_MUL_ORDER);
                 }
             }
             // Compute l_mu + 1 the degree of sigma(mu+1)[x]
             // and update the polynomial sigma_rho
-            tmp = sigma_rho->deg + k;
+            tmp = sigma_rho.deg + k;
             if (tmp > sigma->deg) {
                 sigma->deg = tmp;
-                sigma_poly_copy(sigma_rho, sigma_copy);
+                sigma_poly_copy(&sigma_rho, &sigma_copy);
                 d_rho = d;
                 pp = 2 * mu;
             }
@@ -423,8 +400,6 @@ void get_error_location_poly(sigma_poly *sigma, gf_tables *tables, syndrome_set 
         }
 
     }
-    sigma_poly_clear(sigma_rho);
-    sigma_poly_clear(sigma_copy);
 }
 
 /**
@@ -532,41 +507,6 @@ void message_from_codeword(uint8_t *o, uint8_t *v) {
 }
 
 /**
- * \fn void gf_tables_clear(gf_tables* gf_tables)
- * \brief Free the allocated memory for a gf_tables
- *
- * \param[in] gf_tables Pointer to a Galois Field Log and Anti-Log tables
- */
-void gf_tables_clear(gf_tables *gf_tables) {
-    free(gf_tables->log_tab);
-    free(gf_tables->antilog_tab);
-    free(gf_tables);
-}
-
-/**
- * \fn void syndrome_clear(syndrome_set* synd_set)
- * \brief Free the allocated memory for a syndrome_set
- *
- * \param[in] synd_set Pointer to a syndrome_set
- */
-void syndrome_clear(syndrome_set *synd_set) {
-    free(synd_set->tab);
-    free(synd_set);
-}
-
-/**
- * \fn void sigma_poly_clear(sigma_poly* poly)
- * \brief Free the allocated memory for a sigma_poly
- *
- * \param[in] poly Pointer to a sigma_poly structure
- * \return void
- */
-void sigma_poly_clear(sigma_poly *poly) {
-    free(poly->value);
-    free(poly);
-}
-
-/**
  * \fn int16_t gf_mult(gf_tables* tables, int16_t a, int16_t b)
  * \brief Multiply two elements in GF(2^m)
  *
@@ -580,28 +520,12 @@ int16_t gf_mult(gf_tables *tables, int16_t a, int16_t b) {
 }
 
 /**
- * \fn cyclotomic_sets* cyclotomic_init()
+ * \fn void cyclotomic_init(cyclotomic_sets *c_tab)
  * \brief Initializes a structure that can store the cyclotomic sets
- *
- * \return a pointer to a cyclotomic_sets
  */
-cyclotomic_sets *cyclotomic_init() {
-    cyclotomic_sets *c_tab = (cyclotomic_sets *) malloc(sizeof(cyclotomic_sets));
+void cyclotomic_init(cyclotomic_sets *c_tab) {
     c_tab->nb_c = 0;
-    c_tab->tab = (int8_t *) calloc(PARAM_GF_MUL_ORDER + 1, sizeof(int8_t));
-    return c_tab;
-}
-
-/**
- * \fn void cyclotomic_clear(cyclotomic_sets* c_tab)
- * \brief Free the allocated memory for a cyclotomic_sets
- *
- * \param[in] c_tab Pointer to a cyclotomic_sets structure
- * \return void
- */
-void cyclotomic_clear(cyclotomic_sets *c_tab) {
-    free(c_tab->tab);
-    free(c_tab);
+    memset(c_tab->tab, 0, PARAM_GF_MUL_ORDER + 1);
 }
 
 /**
@@ -632,31 +556,6 @@ void cyclotomic_gen(cyclotomic_sets *c_tab) {
 }
 
 /**
- * \fn uint8_t* polynomial_hex(int16_t* g)
- * \brief Put the generator polynomial in hexadecimal form
- *
- * \param[in] g Array that is the binary representation of the generator polynomial
- * \return An array of unsigned chars that is the hexadecimal representation of the generator polynomial
- */
-//TODO remove this function
-uint8_t *polynomial_hex(int16_t *g) {
-    int size = PARAM_G / 8 + 1;
-    uint8_t *hex = (uint8_t *) calloc(size, sizeof(uint8_t));
-
-    for (int i = 0; i < size - 1 ; ++i) {
-        for (int j = 0; j < 8; ++j) {
-            hex[i] ^= ((uint8_t) g[j + (i << 3)]) << (7 - j);
-        }
-    }
-
-    for (int i = 0; i < PARAM_G % 8; ++i) {
-        hex[size - 1] ^= ((uint8_t) g[i + ((size - 1) << 3)]) << (7 - i);
-    }
-
-    return hex;
-}
-
-/**
  * \fn void compute_generator_poly(int16_t* g)
  * \brief Compute the generator polynomial
  *
@@ -664,26 +563,26 @@ uint8_t *polynomial_hex(int16_t *g) {
  * \return void
  */
 void compute_generator_poly(int16_t *g) {
-    gf_tables *tables =  gf_tables_init();
-    gf_generation(tables);
+    gf_tables tables;
+    gf_tables_init(&tables);
+    gf_generation(&tables);
 
-    cyclotomic_sets *set = cyclotomic_init();
-    cyclotomic_gen(set);
+    cyclotomic_sets set;
+    cyclotomic_init(&set);
+    cyclotomic_gen(&set);
 
     g[0] = 1; // g(x) = 1
     int deg_g = 0; // deg(g) = 0
 
     for (int i = 0 ; i < PARAM_GF_MUL_ORDER ; ++i) {
-        if (set->tab[i]) {
-            int tmp = gf_get_antilog(tables, i);
+        if (set.tab[i]) {
+            int tmp = gf_get_antilog(&tables, i);
             g[deg_g + 1] = 1; // Set the greater degree to 1
             for (int j = deg_g ; j > 0 ; j--) {
-                g[j] = gf_mult(tables, g[j], tmp) ^ (g[j - 1]);
+                g[j] = gf_mult(&tables, g[j], tmp) ^ (g[j - 1]);
             }
-            g[0] = gf_mult(tables, g[0], tmp); // Multiply the root by the last element of the polynomial
+            g[0] = gf_mult(&tables, g[0], tmp); // Multiply the root by the last element of the polynomial
             deg_g ++;
         }
     }
-    gf_tables_clear(tables);
-    cyclotomic_clear(set);
 }

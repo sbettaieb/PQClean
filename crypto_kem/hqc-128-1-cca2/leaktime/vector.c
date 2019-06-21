@@ -3,15 +3,17 @@
  * \brief Implementation of vectors sampling and some utilities for the HQC scheme
  */
 
-#include <stdint.h>
 #include <string.h>
-#include <stdlib.h> // TODO remove
+#include <assert.h>
 
 #include "vector.h"
+
 #include "parameters.h"
 
 #include "nistseedexpander.h"
 #include "randombytes.h"
+
+#define BITMASK(a, size) ((1UL << (a % size)) - 1) /*!< Create a mask*/
 
 /**
  * \fn void vect_fixed_weight(uint8_t* v, const uint16_t weight, AES_XOF_struct* ctx)
@@ -33,8 +35,10 @@
  */
 void vect_fixed_weight(uint8_t *v, const uint16_t weight, AES_XOF_struct *ctx) {
     unsigned long random_bytes_size = 3 * weight;
-    unsigned char *rand_bytes = (unsigned char *) calloc(random_bytes_size, sizeof(unsigned char));
-    uint32_t *tmp = (uint32_t *) calloc(weight, sizeof(uint32_t));
+    unsigned char rand_bytes[3 * PARAM_OMEGA_R] = {0};
+    uint32_t tmp[PARAM_OMEGA_R] = {0};
+
+    assert(weight <= PARAM_OMEGA_R);
 
     seedexpander(ctx, rand_bytes, random_bytes_size);
 
@@ -75,9 +79,6 @@ void vect_fixed_weight(uint8_t *v, const uint16_t weight, AES_XOF_struct *ctx) {
         int pos = tmp[i] % 8;
         v[index] |= 1 << pos;
     }
-
-    free(rand_bytes);
-    free(tmp);
 }
 
 /**

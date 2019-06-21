@@ -4,7 +4,6 @@
  */
 
 #include <string.h>
-#include <stdlib.h> // TODO remove
 
 #include "parameters.h"
 #include "parsing.h"
@@ -43,14 +42,12 @@ void hqc_secret_key_to_string(unsigned char *sk, const unsigned char *sk_seed, c
 void hqc_secret_key_from_string(uint8_t *x, uint8_t *y, unsigned char *pk, const unsigned char *sk) {
     unsigned char sk_seed[SEED_BYTES];
     memcpy(sk_seed, sk, SEED_BYTES);
-    AES_XOF_struct *sk_seedexpander = (AES_XOF_struct *) malloc(sizeof(AES_XOF_struct));
-    seedexpander_init(sk_seedexpander, sk_seed, sk_seed + 32, SEEDEXPANDER_MAX_LENGTH);
+    AES_XOF_struct sk_seedexpander;
+    seedexpander_init(&sk_seedexpander, sk_seed, sk_seed + 32, SEEDEXPANDER_MAX_LENGTH);
 
-    vect_fixed_weight(x, PARAM_OMEGA, sk_seedexpander);
-    vect_fixed_weight(y, PARAM_OMEGA, sk_seedexpander);
+    vect_fixed_weight(x, PARAM_OMEGA, &sk_seedexpander);
+    vect_fixed_weight(y, PARAM_OMEGA, &sk_seedexpander);
     memcpy(pk, sk + SEED_BYTES, PUBLIC_KEY_BYTES);
-
-    free(sk_seedexpander);
 }
 
 /**
@@ -82,13 +79,11 @@ void hqc_public_key_to_string(unsigned char *pk, const unsigned char *pk_seed, u
 void hqc_public_key_from_string(uint8_t *h, uint8_t *s, const unsigned char *pk) {
     unsigned char pk_seed[SEED_BYTES];
     memcpy(pk_seed, pk, SEED_BYTES);
-    AES_XOF_struct *pk_seedexpander = (AES_XOF_struct *) malloc(sizeof(AES_XOF_struct));
-    seedexpander_init(pk_seedexpander, pk_seed, pk_seed + 32, SEEDEXPANDER_MAX_LENGTH);
-    vect_set_random(h, pk_seedexpander);
+    AES_XOF_struct pk_seedexpander;
+    seedexpander_init(&pk_seedexpander, pk_seed, pk_seed + 32, SEEDEXPANDER_MAX_LENGTH);
+    vect_set_random(h, &pk_seedexpander);
 
     memcpy(s, pk + SEED_BYTES, VEC_N_SIZE_BYTES);
-
-    free(pk_seedexpander);
 }
 
 /**

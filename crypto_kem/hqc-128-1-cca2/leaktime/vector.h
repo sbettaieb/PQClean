@@ -10,8 +10,6 @@
 
 #include "nistseedexpander.h"
 
-#define BITMASK(a, size) ((1UL << (a % size)) - 1) /*!< Create a mask*/
-
 void vect_fixed_weight(uint8_t *v, const uint16_t weight, AES_XOF_struct *ctx);
 void vect_set_random(uint8_t *v, AES_XOF_struct *ctx);
 void vect_set_random_from_randombytes(uint8_t *v);
