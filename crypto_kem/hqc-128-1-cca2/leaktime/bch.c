@@ -13,6 +13,8 @@
 #include "parameters.h"
 #include "vector.h"
 
+void get_generator_poly(uint8_t *g);
+
 /**
  * \fn int16_t gf_get_antilog(gf_tables* tables, int16_t i)
  * \brief Gets the Anti-Log value of the input i
@@ -46,37 +48,6 @@ int16_t gf_get_log(gf_tables *tables, int16_t i) {
  */
 int16_t gf_mod(int16_t i) {
     return (i < PARAM_GF_MUL_ORDER) ? i : i - PARAM_GF_MUL_ORDER;
-}
-
-/**
- * \fn void get_generator_poly(uint8_t* g)
- * \brief Get the generator polynomial of the BCH code
- *
- * This functions stores each coordinate of the generator polynomial in an unsigned char
- *
- * \param[out] g Pointer to an array of bytes
- */
-void get_generator_poly(uint8_t *g);
-void get_generator_poly(uint8_t *g) {
-    // The generator polynomial g(x) of the BCH code
-    uint8_t tmp[(PARAM_G + 7) / 8] = { 0xDA, 0x15, 0xFB, 0x7C, 0x96, 0x9C, 0xE2,
-                                       0xAC, 0xA4, 0x7F, 0x3D, 0x5A, 0x5C, 0x78, 0xBD, 0x3D, 0x13, 0xE8, 0xB1,
-                                       0x48, 0xD5, 0xB3, 0x94, 0x9A, 0x18, 0x5B, 0x47, 0x59, 0xB1, 0x62, 0x04,
-                                       0x32, 0x33, 0x89, 0xE0, 0xCB, 0xF7, 0x33, 0xE1, 0x75, 0x0C, 0x22, 0xAC,
-                                       0x58, 0x93, 0x29, 0xE6, 0x6B, 0x00, 0xB0, 0x35, 0x07, 0x5B, 0xDD, 0xBE,
-                                       0x4C, 0x0A, 0x0B, 0xE7, 0x0B, 0xC9, 0xF0, 0x02, 0xB4, 0xB0, 0x7A, 0x42,
-                                       0x08
-                                     };
-
-    for (int i = 0; i < (PARAM_G + 7) / 8; ++i) {
-        for (int j = 0; j < 8; ++j) {
-            g[j + i * 8] = (tmp[i] & (1 << (7 - j))) >> (7 - j);
-        }
-    }
-
-    for (int j = 0; j < PARAM_G % 8 ; ++j)  {
-        g[j + ((PARAM_G - 1) / 8) * 8] = (tmp[(PARAM_G - 1) / 8] & (1 << (7 - j))) >> (7 - j);
-    }
 }
 
 /**
@@ -121,6 +92,37 @@ void message_to_array(uint8_t *o, uint8_t *v) {
         for (uint8_t j = 0 ; j < 8 ; ++j) {
             o[j + i * 8] = (v[i] >> j) & 0x01;
         }
+    }
+}
+
+/**
+ * \fn void get_generator_poly(uint8_t* g)
+ * \brief Get the generator polynomial of the BCH code
+ *
+ * This functions stores each coordinate of the generator polynomial in an unsigned char
+ *
+ * \param[out] g Pointer to an array of bytes
+ */
+void get_generator_poly(uint8_t *g) {
+    uint8_t g_bytes_size = (PARAM_G / 8) + 1;
+    // The generator polynomial g(x) of the BCH code
+    uint8_t tmp[(PARAM_G / 8) + 1] = { 0xDA, 0x15, 0xFB, 0x7C, 0x96, 0x9C, 0xE2,
+                                       0xAC, 0xA4, 0x7F, 0x3D, 0x5A, 0x5C, 0x78, 0xBD, 0x3D, 0x13, 0xE8, 0xB1,
+                                       0x48, 0xD5, 0xB3, 0x94, 0x9A, 0x18, 0x5B, 0x47, 0x59, 0xB1, 0x62, 0x04,
+                                       0x32, 0x33, 0x89, 0xE0, 0xCB, 0xF7, 0x33, 0xE1, 0x75, 0x0C, 0x22, 0xAC,
+                                       0x58, 0x93, 0x29, 0xE6, 0x6B, 0x00, 0xB0, 0x35, 0x07, 0x5B, 0xDD, 0xBE,
+                                       0x4C, 0x0A, 0x0B, 0xE7, 0x0B, 0xC9, 0xF0, 0x02, 0xB4, 0xB0, 0x7A, 0x42,
+                                       0x08
+                                     };
+
+    for (int i = 0; i < (g_bytes_size - 1); ++i) {
+        for (int j = 0; j < 8; ++j) {
+            g[j + i * 8] = (tmp[i] & (1 << (7 - j))) >> (7 - j);
+        }
+    }
+
+    for (int j = 0; j < PARAM_G % 8 ; ++j)  {
+        g[j + (g_bytes_size - 1) * 8] = (tmp[g_bytes_size - 1] & (1 << (7 - j))) >> (7 - j);
     }
 }
 
