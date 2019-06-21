@@ -1,10 +1,10 @@
+#ifndef TENSOR_H
+#define TENSOR_H
+
 /**
  * \file tensor.h
  * \brief Header file for tensor.c
  */
-
-#ifndef TENSOR_H
-#define TENSOR_H
 
 #include <stdint.h>
 

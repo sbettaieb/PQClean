@@ -1,10 +1,10 @@
+#ifndef HQC_H
+#define HQC_H
+
 /**
  * \file hqc.h
  * \brief Functions of the HQC_PKE IND_CPA scheme
  */
-
-#ifndef HQC_H
-#define HQC_H
 
 #include <stdint.h>
 

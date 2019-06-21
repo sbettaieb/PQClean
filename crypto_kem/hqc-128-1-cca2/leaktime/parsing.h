@@ -1,10 +1,10 @@
+#ifndef PARSING_H
+#define PARSING_H
+
 /**
  * \file parsing.h
  * \brief Header file for parsing.c
  */
-
-#ifndef PARSING_H
-#define PARSING_H
 
 #include <stdint.h>
 

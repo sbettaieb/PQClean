@@ -1,10 +1,10 @@
+#ifndef HQC_PARAMETERS_H
+#define HQC_PARAMETERS_H
+
 /**
  * \file parameters.h
  * \brief Parameters of the HQC_KEM IND-CCA2 scheme
  */
-
-#ifndef HQC_PARAMETERS_H
-#define HQC_PARAMETERS_H
 
 #include "api.h"
 

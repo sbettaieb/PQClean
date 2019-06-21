@@ -1,10 +1,10 @@
+#ifndef VECTOR_H
+#define VECTOR_H
+
 /**
  * \file vector.h
  * \brief Header file for vector.c
  */
-
-#ifndef VECTOR_H
-#define VECTOR_H
 
 #include <stdint.h>
 

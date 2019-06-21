@@ -1,10 +1,10 @@
+#ifndef GF2X_H
+#define GF2X_H
+
 /**
  * \file gf2x.h
  * \brief Header file for gf2x.c
  */
-
-#ifndef GF2X_H
-#define GF2X_H
 
 #include <stdint.h>
 

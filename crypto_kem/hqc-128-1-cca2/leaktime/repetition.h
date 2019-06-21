@@ -1,10 +1,10 @@
+#ifndef REPETITION_H
+#define REPETITION_H
+
 /**
  * \file repetition.h
  * \brief Header file for repetition.c
  */
-
-#ifndef REPETITION_H
-#define REPETITION_H
 
 #include <stdint.h>
 

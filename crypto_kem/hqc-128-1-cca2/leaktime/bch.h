@@ -1,10 +1,10 @@
+#ifndef BCH_H
+#define BCH_H
+
 /**
  * \file bch.h
  * \brief Header file for bch.c
  */
-
-#ifndef BCH_H
-#define BCH_H
 
 #include <stdint.h>
 
