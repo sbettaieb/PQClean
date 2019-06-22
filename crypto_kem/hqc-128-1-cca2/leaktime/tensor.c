@@ -10,7 +10,7 @@
 #include "repetition.h"
 
 /**
- * \fn void tensor_code_encode(uint8_t* em, uint8_t* m)
+ * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_tensor_code_encode(uint8_t* em, uint8_t* m)
  * \brief Encoding the message m to a code word em using the tensor code
  *
  * First we encode the message using the BCH code, then with the repetition code to obtain
@@ -19,21 +19,21 @@
  * \param[out] em Pointer to an array that is the tensor code word
  * \param[in] m Pointer to an array that is the message
  */
-void tensor_code_encode(uint8_t *em, uint8_t *m) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_tensor_code_encode(uint8_t *em, uint8_t *m) {
     uint8_t tmp[VEC_N1_SIZE_BYTES] = {0};
-    bch_code_encode(tmp, m);
-    repetition_code_encode(em, tmp);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_encode(tmp, m);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_encode(em, tmp);
 }
 
 /**
- * \fn void tensor_code_decode(uint8_t* m, uint8_t* em)
+ * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_tensor_code_decode(uint8_t* m, uint8_t* em)
  * \brief Decoding the code word em to a message m using the tensor code
  *
  * \param[out] m Pointer to an array that is the message
  * \param[in] em Pointer to an array that is the code word
  */
-void tensor_code_decode(uint8_t *m, uint8_t *em) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_tensor_code_decode(uint8_t *m, uint8_t *em) {
     uint8_t tmp[VEC_N1_SIZE_BYTES] = {0};
-    repetition_code_decode(tmp, em);
-    bch_code_decode(m, tmp);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_decode(tmp, em);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_decode(m, tmp);
 }

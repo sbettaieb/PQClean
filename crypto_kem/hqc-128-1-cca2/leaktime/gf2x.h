@@ -8,6 +8,6 @@
 
 #include <stdint.h>
 
-void ntl_cyclic_product(uint8_t *o, const uint8_t *v1, const uint8_t *v2);
+void PQCLEAN_HQC1281CCA2_LEAKTIME_ntl_cyclic_product(uint8_t *o, const uint8_t *v1, const uint8_t *v2);
 
 #endif
