@@ -16,7 +16,7 @@
 #define BITMASK(a, size) ((1UL << (a % size)) - 1) /*!< Create a mask*/
 
 /**
- * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(uint8_t* v, const uint16_t weight, AES_XOF_struct* ctx)
+ * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(AES_XOF_struct* ctx, uint8_t *v, uint16_t weight)
  * \brief Generates a vector of a given Hamming weight
  *
  * This function generates uniformly at random a binary vector of a Hamming weight equal to the parameter <b>weight</b>. The vector
@@ -29,11 +29,11 @@
  *
  * The parameter \f$ t \f$ is precomputed and it's denoted by UTILS_REJECTION_THRESHOLD (see the file parameters.h).
  *
- * \param[in] v Pointer to an array
+ * \param[in/out] ctx Pointer to the context of the seed expander
+ * \param[out] v Pointer to an array
  * \param[in] weight Integer that is the Hamming weight
- * \param[in] ctx Pointer to the context of the seed expander
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(uint8_t *v, const uint16_t weight, AES_XOF_struct *ctx) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(AES_XOF_struct *ctx, uint8_t *v, uint16_t weight) {
     unsigned long random_bytes_size = 3 * weight;
     unsigned char rand_bytes[3 * PARAM_OMEGA_R] = {0};
     uint32_t tmp[PARAM_OMEGA_R] = {0};
@@ -82,16 +82,16 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(uint8_t *v, const uint16_t w
 }
 
 /**
- * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(uint8_t* v, AES_XOF_struct* ctx)
+ * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(AES_XOF_struct* ctx, uint8_t* v)
  * \brief Generates a random vector of dimension <b>PARAM_N</b>
  *
  * This function generates a random binary vector of dimension <b>PARAM_N</b>. It generates a random
  * array of bytes using the seedexpander function, and drop the extra bits using a mask.
  *
- * \param[in] v Pointer to an array
- * \param[in] ctx Pointer to the context of the seed expander
+ * \param[in/out] ctx Pointer to the context of the seed expander
+ * \param[out] v Pointer to an array
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(uint8_t *v, AES_XOF_struct *ctx) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(AES_XOF_struct *ctx, uint8_t *v) {
     uint8_t rand_bytes[VEC_N_SIZE_BYTES] = {0};
 
     seedexpander(ctx, rand_bytes, VEC_N_SIZE_BYTES);
@@ -106,7 +106,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(uint8_t *v, AES_XOF_struct *ct
  *
  * This function generates a random binary vector. It uses the the randombytes function.
  *
- * \param[in] v Pointer to an array
+ * \param[out] v Pointer to an array
  */
 void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random_from_randombytes(uint8_t *v) {
     uint8_t rand_bytes [VEC_K_SIZE_BYTES] = {0};
@@ -116,7 +116,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random_from_randombytes(uint8_t *v) {
 }
 
 /**
- * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_add(uint8_t* o, uint8_t* v1, uint8_t* v2, uint32_t size)
+ * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_add(uint8_t* o, const uint8_t* v1, const uint8_t* v2, uint32_t size)
  * \brief Adds two vectors
  *
  * \param[out] o Pointer to an array that is the result
@@ -124,14 +124,14 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random_from_randombytes(uint8_t *v) {
  * \param[in] v2 Pointer to an array that is the second vector
  * \param[in] size Integer that is the size of the vectors
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_add(uint8_t *o, uint8_t *v1, uint8_t *v2, uint32_t size) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_add(uint8_t *o, const uint8_t *v1, const uint8_t *v2, uint32_t size) {
     for (uint32_t i = 0; i < size; ++i) {
         o[i] = v1[i] ^ v2[i];
     }
 }
 
 /**
- * \fn int PQCLEAN_HQC1281CCA2_LEAKTIME_vect_compare(uint8_t* v1, uint8_t* v2, uint32_t size)
+ * \fn int PQCLEAN_HQC1281CCA2_LEAKTIME_vect_compare(const uint8_t* v1, const uint8_t* v2, uint32_t size)
  * \brief Compares two vectors
  *
  * \param[in] v1 Pointer to an array that is first vector
@@ -139,12 +139,12 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_add(uint8_t *o, uint8_t *v1, uint8_t *v2,
  * \param[in] size Integer that is the size of the vectors
  * \return 0 if the vectors are equals and a negative/psotive value otherwise
  */
-int PQCLEAN_HQC1281CCA2_LEAKTIME_vect_compare(uint8_t *v1, uint8_t *v2, uint32_t size) {
+int PQCLEAN_HQC1281CCA2_LEAKTIME_vect_compare(const uint8_t *v1, const uint8_t *v2, uint32_t size) {
     return memcmp(v1, v2, size);
 }
 
 /**
- * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_resize(uint8_t* o, uint32_t size_o, uint8_t* v, uint32_t size_v)
+ * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_resize(uint8_t* o, uint32_t size_o, const uint8_t* v, uint32_t size_v)
  * \brief Resize a vector so that it contains <b>size_o</b> bits
  *
  * \param[out] o Pointer to the output vector
@@ -152,7 +152,7 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_vect_compare(uint8_t *v1, uint8_t *v2, uint32_t
  * \param[in] v Pointer to the input vector
  * \param[in] size_v Integer that is the size of the input vector in bits
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_resize(uint8_t *o, uint32_t size_o, uint8_t *v, uint32_t size_v) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_resize(uint8_t *o, uint32_t size_o, const uint8_t *v, uint32_t size_v) {
     if (size_o < size_v) {
         memcpy(o, v, VEC_N1N2_SIZE_BYTES);
         uint8_t mask = 0x7F;

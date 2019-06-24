@@ -27,8 +27,8 @@ typedef struct {
 
 int
 seedexpander_init(AES_XOF_struct *ctx,
-                  uint8_t *seed,
-                  uint8_t *diversifier,
+                  const uint8_t *seed,
+                  const uint8_t *diversifier,
                   size_t maxlen);
 
 int

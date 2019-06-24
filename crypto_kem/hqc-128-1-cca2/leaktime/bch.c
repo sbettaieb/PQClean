@@ -49,45 +49,45 @@ typedef struct syndrome_set {
     int16_t tab[2 * PARAM_DELTA]; /*!< An array that contains the values of syndromes*/
 } syndrome_set;
 
-static int16_t gf_get_antilog(gf_tables *tables, int16_t i);
-static int16_t gf_get_log(gf_tables *tables, int16_t i);
+static int16_t gf_get_antilog(const gf_tables *tables, int16_t i);
+static int16_t gf_get_log(const gf_tables *tables, int16_t i);
 static int16_t gf_mod(int16_t i);
-static void message_to_array(uint8_t *o, uint8_t *v);
-static void lfsr_encoder(uint8_t *em, uint8_t *g, uint8_t *m);
-static void array_to_codeword(uint8_t *v, uint8_t *c);
+static void message_to_array(uint8_t *o, const uint8_t *v);
+static void lfsr_encoder(uint8_t *em, const uint8_t *g, const uint8_t *m);
+static void array_to_codeword(uint8_t *v, const uint8_t *c);
 static void gf_tables_init(gf_tables *tables);
 static void gf_generation(gf_tables *gf_tables);
 static void syndrome_init(syndrome_set *synd_set);
-static void syndrome_gen(syndrome_set *synd_set, gf_tables *tables, uint8_t *v);
+static void syndrome_gen(syndrome_set *synd_set, const gf_tables *tables, const uint8_t *v);
 static void sigma_poly_init(sigma_poly *poly);
-static void get_error_location_poly(sigma_poly *sigma, gf_tables *tables, syndrome_set *synd_set);
-static void sigma_poly_copy(sigma_poly *p1, sigma_poly *p2);
-static void chien_search(uint16_t *error_pos, uint16_t *size, gf_tables *tables, sigma_poly *sigma);
-static void error_poly_gen(uint8_t *e, uint16_t *error_pos, uint16_t size);
-static void message_from_codeword(uint8_t *o, uint8_t *v);
+static void get_error_location_poly(sigma_poly *sigma, const gf_tables *tables, const syndrome_set *synd_set);
+static void sigma_poly_copy(sigma_poly *p1, const sigma_poly *p2);
+static void chien_search(uint16_t *error_pos, uint16_t *size, sigma_poly *sigma, const gf_tables *tables);
+static void error_poly_gen(uint8_t *e, const uint16_t *error_pos, uint16_t size);
+static void message_from_codeword(uint8_t *o, const uint8_t *v);
 static void get_generator_poly(uint8_t *g);
 
 /**
- * \fn int16_t gf_get_antilog(gf_tables* tables, int16_t i)
+ * \fn int16_t gf_get_antilog(const gf_tables* tables, int16_t i)
  * \brief Gets the Anti-Log value of the input i
  *
  * \param[in] tables Pointer to a Galois Field Log and Anti-Log tables
  * \param[in] i Integer
  * \return integer corresponding to the Anti-Log value of i
  */
-static int16_t gf_get_antilog(gf_tables *tables, int16_t i) {
+static int16_t gf_get_antilog(const gf_tables *tables, int16_t i) {
     return tables->antilog_tab[i];
 }
 
 /**
- * \fn int16_t gf_get_log(gf_tables* tables, int16_t i)
+ * \fn int16_t gf_get_log(const gf_tables* tables, int16_t i)
  * \brief Gets the Log value of the input i
  *
  * \param[in] tables Pointer to a Galois Field Log and Anti-Log tables
  * \param[in] i Integer
  * \return integer corresponding to the Log value of i
  */
-static int16_t gf_get_log(gf_tables *tables, int16_t i) {
+static int16_t gf_get_log(const gf_tables *tables, int16_t i) {
     return tables->log_tab[i];
 }
 
@@ -120,7 +120,7 @@ static int16_t gf_mod(int16_t i) {
  * \param[out] em Pointer to an array that is the encoded message
  * \param[in] m Pointer to an array that is the message
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_encode(uint8_t *em, uint8_t *m) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_encode(uint8_t *em, const uint8_t *m) {
     uint8_t tmp1[PARAM_K];
     uint8_t tmp2[PARAM_N1];
     uint8_t g [PARAM_G];
@@ -139,7 +139,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_encode(uint8_t *em, uint8_t *m) {
  * \param[out] o Pointer to an array of unsigned char
  * \param[in] v Pointer to an array of unsigned char
  */
-static void message_to_array(uint8_t *o, uint8_t *v) {
+static void message_to_array(uint8_t *o, const uint8_t *v) {
     for (uint8_t i = 0 ; i < VEC_K_SIZE_BYTES ; ++i)  {
         for (uint8_t j = 0 ; j < 8 ; ++j) {
             o[j + i * 8] = (v[i] >> j) & 0x01;
@@ -186,7 +186,7 @@ static void get_generator_poly(uint8_t *g) {
  * \param[in] g Pointer to an array that is the generator polynomial
  * \param[in] m Pointer to an array that is the message to encode
  */
-static void lfsr_encoder(uint8_t *em, uint8_t *g, uint8_t *m) {
+static void lfsr_encoder(uint8_t *em, const uint8_t *g, const uint8_t *m) {
     int gate_value = 0;
     // Compute the Parity-check digits
     for (int i = PARAM_K - 1; i >= 0; --i) {
@@ -220,7 +220,7 @@ static void lfsr_encoder(uint8_t *em, uint8_t *g, uint8_t *m) {
  * \param[out] v Pointer to an array of unsigned char elements
  * \param[in] c Pointer to an array of unsigned char elements
  */
-static void array_to_codeword(uint8_t *v, uint8_t *c) {
+static void array_to_codeword(uint8_t *v, const uint8_t *c) {
     for (uint16_t i = 0 ; i < (VEC_N1_SIZE_BYTES - 1) ; ++i) {
         for (uint8_t j = 0 ; j < 8 ; ++j) {
             v[i] |= c[j + i * 8] << j;
@@ -233,7 +233,7 @@ static void array_to_codeword(uint8_t *v, uint8_t *c) {
 }
 
 /**
- * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_decode(uint8_t* m, uint8_t* em)
+ * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_decode(uint8_t* m, const uint8_t* em)
  * \brief Decodes a supposed BCH code word
  *
  * The decoding procedure is described in <a href="../doc_bch.pdf" target="_blank"><b>BCH code</b></a>.
@@ -254,7 +254,7 @@ static void array_to_codeword(uint8_t *v, uint8_t *c) {
  * \param[out] m Pointer to an array that is the decoded code word
  * \param[in] em Pointer to an array that is supposed to be a code word
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_decode(uint8_t *m, uint8_t *em) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_decode(uint8_t *m, const uint8_t *em) {
     // Generate Galois Field GF(2^10) using the primitive polynomial defined in PARAM_POLY
     // GF(2^10) is represented by the lookup tables (Log Anti-Log tables)
     gf_tables tables;
@@ -275,7 +275,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_decode(uint8_t *m, uint8_t *em) {
     uint16_t error_pos [PARAM_DELTA];
     memset(error_pos, 0, PARAM_DELTA * 2);
     uint16_t size = 0;
-    chien_search(error_pos, &size, &tables, &sigma);
+    chien_search(error_pos, &size, &sigma, &tables);
 
     // Compute the error polynomial
     uint8_t e[VEC_N1_SIZE_BYTES] = {0};
@@ -348,14 +348,14 @@ static void syndrome_init(syndrome_set *synd_set) {
 }
 
 /**
- * \fn void syndrome_gen(syndrome_set* synd_set, gf_tables* tables, uint8_t* v)
+ * \fn void syndrome_gen(syndrome_set* synd_set, const gf_tables* tables, const uint8_t* v)
  * \brief Generates 2 * PARAM_DELTA syndromes from the received vector
  *
  * \param[out] synd_set Pointer to the structure syndrome_set that contains the computed syndromes
  * \param[in] tables Pointer to a gf_tables
  * \param[in] v Pointer to an array of unsigned char elements
  */
-static void syndrome_gen(syndrome_set *synd_set, gf_tables *tables, uint8_t *v) {
+static void syndrome_gen(syndrome_set *synd_set, const gf_tables *tables, const uint8_t *v) {
     uint8_t tmp_array[PARAM_N1];
     // For clarity of computation we separate the coordinates of the vector v by putting each coordinate in an unsigned char.
     for (uint8_t i = 0; i < (VEC_N1_SIZE_BYTES - 1) ; ++i) {
@@ -392,7 +392,7 @@ static void sigma_poly_init(sigma_poly *poly) {
 }
 
 /**
-* \fn void get_error_location_poly(sigma_poly* sigma, gf_tables* tables, syndrome_set* synd_set)
+* \fn void get_error_location_poly(sigma_poly* sigma, const gf_tables* tables, const syndrome_set* synd_set)
 * \brief Computes the error location polynomial \f$ \sigma\f$(x) (see the document <a href="../doc_bch.pdf" target="_blank"><b>BCH code</b></a>)
 *
 * This function implements the simplified Berlekamp's algorithm for finding the error location polynomial for
@@ -402,7 +402,7 @@ static void sigma_poly_init(sigma_poly *poly) {
 * \param[in] tables Pointer to a gf_tables
 * \param[in] synd_set Pointer to the structure syndrome_set that contains the set of syndromes computed by the function syndrome_gen
 */
-static void get_error_location_poly(sigma_poly *sigma, gf_tables *tables, syndrome_set *synd_set) {
+static void get_error_location_poly(sigma_poly *sigma, const gf_tables *tables, const syndrome_set *synd_set) {
     // Find the error location polynomial via Berlekamp's simplified algorithm as described by
     // Laurie L. Joiner and John J. Komo, the comments are following their terminology
 
@@ -457,13 +457,13 @@ static void get_error_location_poly(sigma_poly *sigma, gf_tables *tables, syndro
 }
 
 /**
- * \fn void sigma_poly_copy(sigma_poly* p1, sigma_poly* p2)
+ * \fn void sigma_poly_copy(sigma_poly* p1, const sigma_poly* p2)
  * \brief Copy a Galois Field polynomial p2 the Galois Field polynomial p1
  *
  * \param[out] p1 Pointer to a sigma_poly
  * \param[in] p2 Pointer to a sigma_poly
  */
-static void sigma_poly_copy(sigma_poly *p1, sigma_poly *p2) {
+static void sigma_poly_copy(sigma_poly *p1, const sigma_poly *p2) {
     for (int i = 0; i <= p2->deg ; ++i) {
         p1->value[i] = p2->value[i];
     }
@@ -471,7 +471,7 @@ static void sigma_poly_copy(sigma_poly *p1, sigma_poly *p2) {
 }
 
 /**
- * \fn void chien_search(uint16_t* error_pos, uint16_t* size, gf_tables* tables, sigma_poly* sigma)
+ * \fn void chien_search(uint16_t* error_pos, uint16_t* size, const gf_tables* tables, const sigma_poly* sigma)
  * \brief Computes the error location numbers
  *
  * We use Chien procedure for searching error-location numbers \cite lin1983error \cite chien1964cyclic. The Chien search algorithm computes the roots of the
@@ -479,10 +479,10 @@ static void sigma_poly_copy(sigma_poly *p1, sigma_poly *p2) {
  *
  * \param[out] error_pos Pointer to an array that contains the error location numbers
  * \param[out] size Pointer to the size of the array that contains the error location numbers
+ * \param[out] sigma Pointer to sigma_poly a structure that contains the error location polynomial
  * \param[in] tables Pointer to gf_tables
- * \param[in] sigma Pointer to sigma_poly a structure that contains the error location polynomial
  */
-static void chien_search(uint16_t *error_pos, uint16_t *size, gf_tables *tables, sigma_poly *sigma) {
+static void chien_search(uint16_t *error_pos, uint16_t *size, sigma_poly *sigma, const gf_tables *tables) {
     int i = sigma->deg + 1;
     // Put the coordinates of the error location polynomial in the log format. Its better for multiplication.
     while (i--) {
@@ -520,7 +520,7 @@ static void chien_search(uint16_t *error_pos, uint16_t *size, gf_tables *tables,
 }
 
 /**
- * \fn void error_poly_gen(uint8_t* e, uint16_t* error_pos, uint16_t size)
+ * \fn void error_poly_gen(uint8_t* e, const uint16_t* error_pos, uint16_t size)
  * \brief Computes the error polynomial which correspond to \f$ e\f$(x) in the document <a href="../doc_bch.pdf" target="_blank"><b>BCH code</b></a>
  *
  * This function puts the error location numbers in a binary polynomial. For example if the error location numbers are \f$ \alpha^{130} \f$, \f$ \alpha^{80} \f$, and \f$ \alpha^{11} \f$,
@@ -530,7 +530,7 @@ static void chien_search(uint16_t *error_pos, uint16_t *size, gf_tables *tables,
  * \param[in] error_pos Pointer to an array that contains the error location numbers
  * \param[in] size Integer that is the size of the array error_pos
  */
-static void error_poly_gen(uint8_t *e, uint16_t *error_pos, uint16_t size) {
+static void error_poly_gen(uint8_t *e, const uint16_t *error_pos, uint16_t size) {
     for (int i = 0; i < size; ++i) {
         int index = error_pos[i] / 8;
         e[index] ^= 0x01 << (error_pos[i] % 8);
@@ -546,7 +546,7 @@ static void error_poly_gen(uint8_t *e, uint16_t *error_pos, uint16_t size) {
  * \param[out] o Pointer to an array that contains the message
  * \param[in] v Pointer to an array that contains a code word
  */
-static void message_from_codeword(uint8_t *o, uint8_t *v) {
+static void message_from_codeword(uint8_t *o, const uint8_t *v) {
     int val = PARAM_N1 - PARAM_K;
 
     uint8_t mask_m1 = 0xF0;

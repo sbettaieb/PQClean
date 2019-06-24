@@ -43,12 +43,12 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_keygen(unsigned char *pk, unsigned cha
     uint8_t x [VEC_N_SIZE_BYTES] = {0};
     uint8_t y [VEC_N_SIZE_BYTES] = {0};
 
-    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(x, PARAM_OMEGA, &sk_seedexpander);
-    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(y, PARAM_OMEGA, &sk_seedexpander);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(&sk_seedexpander, x, PARAM_OMEGA);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(&sk_seedexpander, y, PARAM_OMEGA);
 
     // Compute public key
     uint8_t h [VEC_N_SIZE_BYTES] = {0};
-    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(h, &pk_seedexpander);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(&pk_seedexpander, h);
     uint8_t s [VEC_N_SIZE_BYTES] = {0};
     PQCLEAN_HQC1281CCA2_LEAKTIME_ntl_cyclic_product(s, h, y);
     PQCLEAN_HQC1281CCA2_LEAKTIME_vect_add(s, s, x, VEC_N_SIZE_BYTES);
@@ -70,7 +70,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_keygen(unsigned char *pk, unsigned cha
  * \param[in] theta Seed used to derive randomness required for encryption
  * \param[in] pk String containing the public key
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t *u, uint8_t *v, uint8_t *m, unsigned char *theta, const unsigned char *pk) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t *u, uint8_t *v, const uint8_t *m, const unsigned char *theta, const unsigned char *pk) {
 
     // Create seed_expander from theta
     AES_XOF_struct seedexpander;
@@ -86,9 +86,9 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t *u, uint8_t *v, uint8_
     uint8_t r2 [VEC_N_SIZE_BYTES] = {0};
     uint8_t e [VEC_N_SIZE_BYTES] = {0};
 
-    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(r1, PARAM_OMEGA_R, &seedexpander);
-    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(r2, PARAM_OMEGA_R, &seedexpander);
-    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(e, PARAM_OMEGA_E, &seedexpander);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(&seedexpander, r1, PARAM_OMEGA_R);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(&seedexpander, r2, PARAM_OMEGA_R);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(&seedexpander, e, PARAM_OMEGA_E);
 
     // Compute u = r1 + r2.h
     PQCLEAN_HQC1281CCA2_LEAKTIME_ntl_cyclic_product(u, r2, h);
@@ -117,7 +117,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t *u, uint8_t *v, uint8_
  * \param[in] v Vector v (second part of the ciphertext)
  * \param[in] sk String containing the secret key
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_decrypt(uint8_t *m, uint8_t *u, uint8_t *v, const unsigned char *sk) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_decrypt(uint8_t *m, const uint8_t *u, const uint8_t *v, const unsigned char *sk) {
 
     // Retrieve x, y, pk from secret key
     uint8_t x [VEC_N_SIZE_BYTES] = {0};

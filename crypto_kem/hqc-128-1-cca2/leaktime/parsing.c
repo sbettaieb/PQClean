@@ -45,8 +45,8 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_secret_key_from_string(uint8_t *x, uint8_t
     AES_XOF_struct sk_seedexpander;
     seedexpander_init(&sk_seedexpander, sk_seed, sk_seed + 32, SEEDEXPANDER_MAX_LENGTH);
 
-    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(x, PARAM_OMEGA, &sk_seedexpander);
-    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(y, PARAM_OMEGA, &sk_seedexpander);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(&sk_seedexpander, x, PARAM_OMEGA);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(&sk_seedexpander, y, PARAM_OMEGA);
     memcpy(pk, sk + SEED_BYTES, PUBLIC_KEY_BYTES);
 }
 
@@ -60,7 +60,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_secret_key_from_string(uint8_t *x, uint8_t
  * \param[in] pk_seed Seed used to generate the public key
  * \param[in] s uint8_t representation of vector s
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_public_key_to_string(unsigned char *pk, const unsigned char *pk_seed, uint8_t *s) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_public_key_to_string(unsigned char *pk, const unsigned char *pk_seed, const uint8_t *s) {
     memcpy(pk, pk_seed, SEED_BYTES);
     memcpy(pk + SEED_BYTES, s, VEC_N_SIZE_BYTES);
 }
@@ -81,13 +81,13 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_public_key_from_string(uint8_t *h, uint8_t
     memcpy(pk_seed, pk, SEED_BYTES);
     AES_XOF_struct pk_seedexpander;
     seedexpander_init(&pk_seedexpander, pk_seed, pk_seed + 32, SEEDEXPANDER_MAX_LENGTH);
-    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(h, &pk_seedexpander);
+    PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(&pk_seedexpander, h);
 
     memcpy(s, pk + SEED_BYTES, VEC_N_SIZE_BYTES);
 }
 
 /**
- *\fn void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_ciphertext_to_string(unsigned char* ct, uint8_t* u, uint8_t* v, const unsigned char* d)
+ *\fn void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_ciphertext_to_string(unsigned char* ct, const uint8_t* u, const uint8_t* v, const unsigned char* d)
  *\brief Parse a ciphertext into a string
  *
  * The ciphertext is composed of vectors <b>u</b>, <b>v</b> and hash <b>d</b>.
@@ -97,7 +97,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_public_key_from_string(uint8_t *h, uint8_t
  * \param[in] v uint8_t representation of vector v
  * \param[in] d String containing the hash d
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_ciphertext_to_string(unsigned char *ct, uint8_t *u, uint8_t *v, const unsigned char *d) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_ciphertext_to_string(unsigned char *ct, const uint8_t *u, const uint8_t *v, const unsigned char *d) {
     memcpy(ct, u, VEC_N_SIZE_BYTES);
     memcpy(ct + VEC_N_SIZE_BYTES, v, VEC_N1N2_SIZE_BYTES);
     memcpy(ct + VEC_N_SIZE_BYTES + VEC_N1N2_SIZE_BYTES, d, SHA512_BYTES);

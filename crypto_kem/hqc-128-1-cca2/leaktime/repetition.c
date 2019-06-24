@@ -7,7 +7,7 @@
 
 #include "parameters.h"
 
-static void array_to_rep_codeword(uint8_t *o, uint8_t *v);
+static void array_to_rep_codeword(uint8_t *o, const uint8_t *v);
 
 /**
  * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_encode(uint8_t* em, uint8_t* m)
@@ -19,7 +19,7 @@ static void array_to_rep_codeword(uint8_t *o, uint8_t *v);
  * \param[out] em Pointer to an array that is the code word
  * \param[in] m Pointer to an array that is the message
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_encode(uint8_t *em, uint8_t *m) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_encode(uint8_t *em, const uint8_t *m) {
     uint8_t tmp [PARAM_N1N2] = {0};
     uint8_t val;
 
@@ -49,7 +49,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_encode(uint8_t *em, uint8_t *m
 }
 
 /**
- * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_decode(uint8_t* m, uint8_t* em)
+ * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_decode(uint8_t* m, const uint8_t* em)
  * \brief Decoding the code words to a message using the repetition code
  *
  * We use a majority decoding. In fact we have that PARAM_N2 = 2 * PARAM_T + 1, thus,
@@ -59,7 +59,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_encode(uint8_t *em, uint8_t *m
  * \param[out] m Pointer to an array that is the message
  * \param[in] em Pointer to an array that is the code word
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_decode(uint8_t *m, uint8_t *em) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_decode(uint8_t *m, const uint8_t *em) {
     int t = 0;
     int k = 1;
     int weight = 0;
@@ -91,7 +91,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_decode(uint8_t *m, uint8_t *em
  * \param[out] o Pointer to an array
  * \param[in] v Pointer to an array
  */
-static void array_to_rep_codeword(uint8_t *o, uint8_t *v) {
+static void array_to_rep_codeword(uint8_t *o, const uint8_t *v) {
     for (uint16_t i = 0 ; i < (VEC_N1N2_SIZE_BYTES - 1) ; ++i) {
         for (uint8_t j = 0 ; j < 8 ; ++j) {
             o[i] |= v[j + i * 8] << j;

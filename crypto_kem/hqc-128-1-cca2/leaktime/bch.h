@@ -10,7 +10,7 @@
 
 #include "parameters.h"
 
-void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_encode(uint8_t *em, uint8_t *m);
-void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_decode(uint8_t *m, uint8_t *em);
+void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_encode(uint8_t *em, const uint8_t *m);
+void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_decode(uint8_t *m, const uint8_t *em);
 
 #endif
