@@ -34,10 +34,10 @@
  * \param[in] weight Integer that is the Hamming weight
  */
 void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(AES_XOF_struct *ctx, uint8_t *v, uint16_t weight) {
-    unsigned long random_bytes_size = 3 * weight;
-    unsigned char rand_bytes[3 * PARAM_OMEGA_R] = {0};
+    size_t random_bytes_size = 3 * weight;
+    uint8_t rand_bytes[3 * PARAM_OMEGA_R] = {0};
     uint32_t tmp[PARAM_OMEGA_R] = {0};
-    unsigned long j = 0;
+    size_t j = 0;
     uint32_t random_data;
     uint8_t exist;
 
@@ -74,8 +74,8 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(AES_XOF_struct *ctx, uint8_t
     }
 
     for (uint16_t i = 0; i < weight; ++i) {
-        int index = tmp[i] / 8;
-        int pos = tmp[i] % 8;
+        size_t index = tmp[i] / 8;
+        int8_t pos = tmp[i] % 8;
         v[index] |= 1 << pos;
     }
 }
@@ -154,11 +154,11 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_vect_compare(const uint8_t *v1, const uint8_t *
 void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_resize(uint8_t *o, uint32_t size_o, const uint8_t *v, uint32_t size_v) {
     if (size_o < size_v) {
         uint8_t mask = 0x7F;
-        int val = 8 - (size_o % 8);
+        int8_t val = 8 - (size_o % 8);
 
         memcpy(o, v, VEC_N1N2_SIZE_BYTES);
 
-        for (int i = 0; i < val; ++i) {
+        for (int8_t i = 0; i < val; ++i) {
             o[VEC_N1N2_SIZE_BYTES - 1] &= (mask >> i);
         }
     } else {

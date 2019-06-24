@@ -3,6 +3,8 @@
  * \brief Implementation of repetition codes
  */
 
+#include <stddef.h>
+
 #include "repetition.h"
 
 #include "parameters.h"
@@ -13,7 +15,7 @@ static void array_to_rep_codeword(uint8_t *o, const uint8_t *v);
  * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_encode(uint8_t* em, uint8_t* m)
  * \brief Encoding each bit in the message m using the repetition code
  *
- * For reasons of clarity and comprehensibility, we do the encoding by storing the encoded bits in a String (each bit in an unsigned char),
+ * For reasons of clarity and comprehensibility, we do the encoding by storing the encoded bits in a String (each bit in an uint8_t),
  * then we parse the obtained string to an compact array using the function array_to_rep_codeword().
  *
  * \param[out] em Pointer to an array that is the code word
@@ -60,9 +62,9 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_encode(uint8_t *em, const uint
  * \param[in] em Pointer to an array that is the code word
  */
 void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_decode(uint8_t *m, const uint8_t *em) {
-    int t = 0;
-    int k = 1;
-    int weight = 0;
+    size_t t = 0;
+    int32_t k = 1;
+    int32_t weight = 0;
     for (uint16_t i = 0; i < VEC_N1N2_SIZE_BYTES; ++i) {
         for (uint8_t j = 0; j < 8; ++j) {
             if ((em[i] >> j) & 0x01) {
@@ -70,7 +72,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_repetition_code_decode(uint8_t *m, const uint8
             }
             if (!(k % PARAM_N2)) {
                 if (weight >= (PARAM_T + 1)) {
-                    int index = t / 8;
+                    size_t index = t / 8;
                     m[index] |= 0x01 << (t % 8);
                     weight = 0;
                     t++;

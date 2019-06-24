@@ -15,7 +15,7 @@
 #include "randombytes.h"
 
 /**
- *\fn void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_keygen(unsigned char* pk, unsigned char* sk)
+ *\fn void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_keygen(uint8_t* pk, uint8_t* sk)
  *\brief Keygen of the HQC_PKE IND_CPA scheme
  *
  * The public key is composed of the syndrome <b>s</b> as well as the <b>seed</b> used to generate the vector <b>h</b>.
@@ -26,10 +26,10 @@
  * \param[out] pk String containing the public key
  * \param[out] sk String containing the secret key
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_keygen(unsigned char *pk, unsigned char *sk) {
-    unsigned char sk_seed[SEED_BYTES];
+void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_keygen(uint8_t *pk, uint8_t *sk) {
+    uint8_t sk_seed[SEED_BYTES];
     AES_XOF_struct sk_seedexpander;
-    unsigned char pk_seed[SEED_BYTES];
+    uint8_t pk_seed[SEED_BYTES];
     AES_XOF_struct pk_seedexpander;
     uint8_t x [VEC_N_SIZE_BYTES] = {0};
     uint8_t y [VEC_N_SIZE_BYTES] = {0};
@@ -58,7 +58,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_keygen(unsigned char *pk, unsigned cha
 }
 
 /**
- *\fn void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t* u, uint8_t* v, uint8_t* m, unsigned char* theta, const unsigned char* pk)
+ *\fn void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t* u, uint8_t* v, uint8_t* m, uint8_t* theta, const uint8_t* pk)
  *\brief Encryption of the HQC_PKE IND_CPA scheme
  *
  * The cihertext is composed of vectors <b>u</b> and <b>v</b>.
@@ -69,7 +69,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_keygen(unsigned char *pk, unsigned cha
  * \param[in] theta Seed used to derive randomness required for encryption
  * \param[in] pk String containing the public key
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t *u, uint8_t *v, const uint8_t *m, const unsigned char *theta, const unsigned char *pk) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t *u, uint8_t *v, const uint8_t *m, const uint8_t *theta, const uint8_t *pk) {
     AES_XOF_struct seedexpander;
     uint8_t h [VEC_N_SIZE_BYTES] = {0};
     uint8_t s [VEC_N_SIZE_BYTES] = {0};
@@ -107,7 +107,7 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t *u, uint8_t *v, const 
 }
 
 /**
- *\fn void hqc_pke_decrypt(uint8_t* m, uint8_t* u, uint8_t* v, const unsigned char* sk)
+ *\fn void hqc_pke_decrypt(uint8_t* m, uint8_t* u, uint8_t* v, const uint8_t* sk)
  *\brief Decryption of the HQC_PKE IND_CPA scheme
  *
  * \param[out] m Vector representing the decrypted message
@@ -115,10 +115,10 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t *u, uint8_t *v, const 
  * \param[in] v Vector v (second part of the ciphertext)
  * \param[in] sk String containing the secret key
  */
-void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_decrypt(uint8_t *m, const uint8_t *u, const uint8_t *v, const unsigned char *sk) {
+void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_decrypt(uint8_t *m, const uint8_t *u, const uint8_t *v, const uint8_t *sk) {
     uint8_t x [VEC_N_SIZE_BYTES] = {0};
     uint8_t y [VEC_N_SIZE_BYTES] = {0};
-    unsigned char pk[PUBLIC_KEY_BYTES];
+    uint8_t pk[PUBLIC_KEY_BYTES];
     uint8_t tmp1 [VEC_N_SIZE_BYTES] = {0};
     uint8_t tmp2 [VEC_N_SIZE_BYTES] = {0};
 
