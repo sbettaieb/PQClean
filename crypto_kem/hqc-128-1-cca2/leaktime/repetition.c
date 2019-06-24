@@ -3,11 +3,11 @@
  * \brief Implementation of repetition codes
  */
 
-#include <stddef.h>
-
 #include "repetition.h"
 
 #include "parameters.h"
+
+#include <stddef.h>
 
 static void array_to_rep_codeword(uint8_t *o, const uint8_t *v);
 
@@ -101,6 +101,6 @@ static void array_to_rep_codeword(uint8_t *o, const uint8_t *v) {
     }
 
     for (uint8_t j = 0 ; j < PARAM_N1N2 % 8 ; ++j) {
-        o[VEC_N1N2_SIZE_BYTES - 1] |= ((uint8_t) v[j + 8 * (VEC_N1N2_SIZE_BYTES - 1)]) << j;
+        o[VEC_N1N2_SIZE_BYTES - 1] |= v[j + 8 * (VEC_N1N2_SIZE_BYTES - 1)] << j;
     }
 }

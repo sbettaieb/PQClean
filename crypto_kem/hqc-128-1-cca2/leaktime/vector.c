@@ -3,9 +3,6 @@
  * \brief Implementation of vectors sampling and some utilities for the HQC scheme
  */
 
-#include <string.h>
-#include <assert.h>
-
 #include "vector.h"
 
 #include "parameters.h"
@@ -13,7 +10,10 @@
 #include "nistseedexpander.h"
 #include "randombytes.h"
 
-#define BITMASK(a, size) ((1UL << (a % size)) - 1) /*!< Create a mask*/
+#include <assert.h>
+#include <string.h>
+
+#define BITMASK(a, size) ((1UL << ((a) % (size))) - 1) /*!< Create a mask*/
 
 /**
  * \fn void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(AES_XOF_struct* ctx, uint8_t *v, uint16_t weight)

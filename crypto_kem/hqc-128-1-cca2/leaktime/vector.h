@@ -6,9 +6,9 @@
  * \brief Header file for vector.c
  */
 
-#include <stdint.h>
-
 #include "nistseedexpander.h"
+
+#include <stdint.h>
 
 void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(AES_XOF_struct *ctx, uint8_t *v, uint16_t weight);
 void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(AES_XOF_struct *ctx, uint8_t *v);

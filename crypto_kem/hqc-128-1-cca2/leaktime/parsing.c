@@ -3,13 +3,14 @@
  * \brief Functions to parse secret key, public key and ciphertext of the HQC scheme
  */
 
-#include <string.h>
+#include "parsing.h"
 
 #include "parameters.h"
-#include "parsing.h"
 #include "vector.h"
 
 #include "nistseedexpander.h"
+
+#include <string.h>
 
 /**
  *\fn void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_secret_key_to_string(uint8_t* sk, const uint8_t* sk_seed, const uint8_t* pk)

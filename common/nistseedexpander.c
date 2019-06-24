@@ -6,9 +6,9 @@
 //  Modified for PQClean by Sebastian Verschoor
 //
 
-#include <string.h>
-#include "aes.h"
 #include "nistseedexpander.h"
+#include "aes.h"
+#include <string.h>
 
 /*
  seedexpander_init()
@@ -23,8 +23,9 @@ seedexpander_init(AES_XOF_struct *ctx,
                   const uint8_t *diversifier,
                   size_t maxlen)
 {
-    if ( maxlen >= 0x100000000 )
+    if ( maxlen >= 0x100000000 ) {
         return RNG_BAD_MAXLEN;
+    }
     
     ctx->length_remaining = maxlen;
     
@@ -63,10 +64,12 @@ seedexpander(AES_XOF_struct *ctx, uint8_t *x, size_t xlen)
 {
     size_t offset;
     
-    if ( x == NULL )
+    if ( x == NULL ) {
         return RNG_BAD_OUTBUF;
-    if ( xlen >= ctx->length_remaining )
+    }
+    if ( xlen >= ctx->length_remaining ) {
         return RNG_BAD_REQ_LEN;
+    }
     
     ctx->length_remaining -= xlen;
     
@@ -89,9 +92,9 @@ seedexpander(AES_XOF_struct *ctx, uint8_t *x, size_t xlen)
         
         //increment the counter
         for (size_t i=15; i>=12; i--) {
-            if ( ctx->ctr[i] == 0xff )
+            if ( ctx->ctr[i] == 0xff ) {
                 ctx->ctr[i] = 0x00;
-            else {
+            } else {
                 ctx->ctr[i]++;
                 break;
             }

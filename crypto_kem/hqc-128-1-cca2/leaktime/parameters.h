@@ -8,7 +8,7 @@
 
 #include "api.h"
 
-#define CEIL_DIVIDE(a, b)  ((a/b) + (a % b == 0 ? 0 : 1)) /*!< Divide a by b and ceil the result*/
+#define CEIL_DIVIDE(a, b)  (((a)/(b)) + ((a) % (b) == 0 ? 0 : 1)) /*!< Divide a by b and ceil the result*/
 
 /*
   #define PARAM_N                             Define the parameter n of the scheme

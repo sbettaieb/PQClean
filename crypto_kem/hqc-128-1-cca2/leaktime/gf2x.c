@@ -13,13 +13,13 @@
 // The methods appear to work even when a_len == b_len + 2 or a_len == b_len + 1,
 // but this has not been rigourously tested.
 
-#include <stdint.h>
-#include <string.h>
-#include <assert.h>
-
 #include "gf2x.h"
 
 #include "parameters.h"
+
+#include <assert.h>
+#include <stdint.h>
+#include <string.h>
 
 typedef uint64_t word_t;
 

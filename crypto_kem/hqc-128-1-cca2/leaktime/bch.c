@@ -228,7 +228,7 @@ static void array_to_codeword(uint8_t *v, const uint8_t *c) {
     }
 
     for (uint8_t j = 0 ; j < PARAM_N1 % 8 ; ++j) {
-        v[VEC_N1_SIZE_BYTES - 1] |= ((uint8_t) c[j + 8 * (VEC_N1_SIZE_BYTES - 1)]) << j;
+        v[VEC_N1_SIZE_BYTES - 1] |= c[j + 8 * (VEC_N1_SIZE_BYTES - 1)] << j;
     }
 }
 

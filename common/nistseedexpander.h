@@ -1,3 +1,6 @@
+#ifndef NISTSEEDEXPANDER_H 
+#define NISTSEEDEXPANDER_H
+
 //
 //  rng.h
 //
@@ -6,16 +9,13 @@
 //  Modified for PQClean by Sebastian Verschoor
 //
 
-#ifndef NISTSEEDEXPANDER_H 
-#define NISTSEEDEXPANDER_H
-
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
-#define RNG_SUCCESS      0
-#define RNG_BAD_MAXLEN  -1
-#define RNG_BAD_OUTBUF  -2
-#define RNG_BAD_REQ_LEN -3
+#define RNG_SUCCESS     ( 0)
+#define RNG_BAD_MAXLEN  (-1)
+#define RNG_BAD_OUTBUF  (-2)
+#define RNG_BAD_REQ_LEN (-3)
 
 typedef struct {
     uint8_t buffer[16];

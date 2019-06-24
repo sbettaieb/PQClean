@@ -3,9 +3,6 @@
  * \brief Implementation of api.h
  */
 
-#include <stdint.h>
-#include <string.h>
-
 #include "api.h"
 
 #include "hqc.h"
@@ -15,6 +12,9 @@
 
 #include "nistseedexpander.h"
 #include "sha2.h"
+
+#include <stdint.h>
+#include <string.h>
 
 /**
  *\fn int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_keypair(uint8_t* pk, uint8_t* sk)
