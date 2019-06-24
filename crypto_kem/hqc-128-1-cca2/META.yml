@@ -7,7 +7,7 @@ length-ciphertext: 6234
 length-secret-key: 3165
 length-shared-secret: 64
 nistkat-sha256: 070837768dd77f6f9e3b4121b59f63c361a53cbea64a98c0bf55e0d6da54779f
-principal-submitter:
+principal-submitters:
   - Carlos Aguilar Melchor
   - Nicolas Aragon
   - Slim Bettaieb
@@ -17,7 +17,6 @@ principal-submitter:
   - Philippe Gaborit
   - Edoardo Persichetti
   - Gilles Zémor
-auxiliary-submitters: # None
 implementations:
-    - name: leaktime
-      version: http://pqc-hqc.org/doc/hqc-reference-implementation_2019-04-10.zip
+  - name: leaktime
+    version: http://pqc-hqc.org/doc/hqc-reference-implementation_2019-04-10.zip
