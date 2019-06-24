@@ -44,35 +44,36 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_keypair(unsigned char *pk, unsigned 
  * return 0 if encapsulation is successful
  */
 int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_enc(unsigned char *ct, unsigned char *ss, const unsigned char *pk) {
-    // Computing m
     uint8_t m[VEC_K_SIZE_BYTES] = {0};
+    unsigned char diversifier_bytes[8];
+    unsigned char seed_G[VEC_K_SIZE_BYTES];
+    AES_XOF_struct G_seedexpander;
+    unsigned char theta[SEED_BYTES];
+    uint8_t u [VEC_N_SIZE_BYTES] = {0};
+    uint8_t v [VEC_N1N2_SIZE_BYTES] = {0};
+    unsigned char d[SHA512_BYTES];
+    unsigned char mc[VEC_K_SIZE_BYTES + VEC_N_SIZE_BYTES + VEC_N1N2_SIZE_BYTES];
+
+    // Computing m
     PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random_from_randombytes(m);
 
     // Generating G function
-    unsigned char diversifier_bytes[8];
     for (int i = 0; i < 8; ++i) {
         diversifier_bytes[i] = 0;
     }
-    unsigned char seed_G[VEC_K_SIZE_BYTES];
     memcpy(seed_G, m, VEC_K_SIZE_BYTES);
-    AES_XOF_struct G_seedexpander;
     seedexpander_init(&G_seedexpander, seed_G, diversifier_bytes, SEEDEXPANDER_MAX_LENGTH);
 
     // Computing theta
-    unsigned char theta[SEED_BYTES];
     seedexpander(&G_seedexpander, theta, SEED_BYTES);
 
     // Encrypting m
-    uint8_t u [VEC_N_SIZE_BYTES] = {0};
-    uint8_t v [VEC_N1N2_SIZE_BYTES] = {0};
     PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(u, v, m, theta, pk);
 
     // Computing d
-    unsigned char d[SHA512_BYTES];
     sha512(d, m, VEC_K_SIZE_BYTES);
 
     // Computing shared secret
-    unsigned char mc[VEC_K_SIZE_BYTES + VEC_N_SIZE_BYTES + VEC_N1N2_SIZE_BYTES];
     memcpy(mc, m, VEC_K_SIZE_BYTES);
     memcpy(mc + VEC_K_SIZE_BYTES, u, VEC_N_SIZE_BYTES);
     memcpy(mc + VEC_K_SIZE_BYTES + VEC_N_SIZE_BYTES, v, VEC_N1N2_SIZE_BYTES);
@@ -94,41 +95,44 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_enc(unsigned char *ct, unsigned char
  * return 0 if decapsulation is successful, -1 otherwise
  */
 int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_dec(unsigned char *ss, const unsigned char *ct, const unsigned char *sk) {
-    // Retrieving u, v and d from ciphertext
     uint8_t u [VEC_N_SIZE_BYTES] = {0};
     uint8_t v [VEC_N1N2_SIZE_BYTES] = {0};
     unsigned char d[SHA512_BYTES];
+    unsigned char pk[PUBLIC_KEY_BYTES];
+    uint8_t m[VEC_K_SIZE_BYTES] = {0};
+    unsigned char diversifier_bytes[8];
+    unsigned char seed_G[VEC_K_SIZE_BYTES];
+    AES_XOF_struct G_seedexpander;
+    unsigned char theta[SEED_BYTES];
+    uint8_t u2 [VEC_N_SIZE_BYTES] = {0};
+    uint8_t v2 [VEC_N1N2_SIZE_BYTES] = {0};
+    int abort = 0;
+    unsigned char d2[SHA512_BYTES];
+    unsigned char mc[VEC_K_SIZE_BYTES + VEC_N_SIZE_BYTES + VEC_N1N2_SIZE_BYTES];
+
+    // Retrieving u, v and d from ciphertext
     PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_ciphertext_from_string(u, v, d, ct);
 
     // Retrieving pk from sk
-    unsigned char pk[PUBLIC_KEY_BYTES];
     memcpy(pk, sk + SEED_BYTES, PUBLIC_KEY_BYTES);
 
     //Decryting
-    uint8_t m[VEC_K_SIZE_BYTES] = {0};
     PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_decrypt(m, u, v, sk);
 
     // Generating G function
-    unsigned char diversifier_bytes[8];
     for (int i = 0; i < 8; ++i) {
         diversifier_bytes[i] = 0;
     }
-    unsigned char seed_G[VEC_K_SIZE_BYTES];
     memcpy(seed_G, m, VEC_K_SIZE_BYTES);
-    AES_XOF_struct G_seedexpander;
     seedexpander_init(&G_seedexpander, seed_G, diversifier_bytes, SEEDEXPANDER_MAX_LENGTH);
 
     // Computing theta
-    unsigned char theta[SEED_BYTES];
     seedexpander(&G_seedexpander, theta, SEED_BYTES);
 
     // Encrypting m'
-    uint8_t u2 [VEC_N_SIZE_BYTES] = {0};
-    uint8_t v2 [VEC_N1N2_SIZE_BYTES] = {0};
     PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_pke_encrypt(u2, v2, m, theta, pk);
 
     // Checking that c = c' and abort otherwise
-    int abort = 0;
     if (PQCLEAN_HQC1281CCA2_LEAKTIME_vect_compare(u, u2, VEC_N_SIZE_BYTES) != 0) {
         abort = 1;
     }
@@ -137,7 +141,6 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_dec(unsigned char *ss, const unsigne
     }
 
     // Computing d'
-    unsigned char d2[SHA512_BYTES];
     sha512(d2, m, VEC_K_SIZE_BYTES);
 
     // Checking that d = d' and abort otherwise
@@ -151,7 +154,6 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_crypto_kem_dec(unsigned char *ss, const unsigne
     }
 
     // Computing shared secret
-    unsigned char mc[VEC_K_SIZE_BYTES + VEC_N_SIZE_BYTES + VEC_N1N2_SIZE_BYTES];
     memcpy(mc, m, VEC_K_SIZE_BYTES);
     memcpy(mc + VEC_K_SIZE_BYTES, u, VEC_N_SIZE_BYTES);
     memcpy(mc + VEC_K_SIZE_BYTES + VEC_N_SIZE_BYTES, v, VEC_N1N2_SIZE_BYTES);

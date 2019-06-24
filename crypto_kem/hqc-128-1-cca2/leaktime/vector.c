@@ -37,14 +37,13 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(AES_XOF_struct *ctx, uint8_t
     unsigned long random_bytes_size = 3 * weight;
     unsigned char rand_bytes[3 * PARAM_OMEGA_R] = {0};
     uint32_t tmp[PARAM_OMEGA_R] = {0};
+    unsigned long j = 0;
+    uint32_t random_data;
+    uint8_t exist;
 
     assert(weight <= PARAM_OMEGA_R);
 
     seedexpander(ctx, rand_bytes, random_bytes_size);
-
-    unsigned long j = 0;
-    uint32_t random_data;
-    uint8_t exist;
 
     for (uint32_t i = 0; i < weight ; ++i) {
         exist = 0;
@@ -154,9 +153,10 @@ int PQCLEAN_HQC1281CCA2_LEAKTIME_vect_compare(const uint8_t *v1, const uint8_t *
  */
 void PQCLEAN_HQC1281CCA2_LEAKTIME_vect_resize(uint8_t *o, uint32_t size_o, const uint8_t *v, uint32_t size_v) {
     if (size_o < size_v) {
-        memcpy(o, v, VEC_N1N2_SIZE_BYTES);
         uint8_t mask = 0x7F;
         int val = 8 - (size_o % 8);
+
+        memcpy(o, v, VEC_N1N2_SIZE_BYTES);
 
         for (int i = 0; i < val; ++i) {
             o[VEC_N1N2_SIZE_BYTES - 1] &= (mask >> i);

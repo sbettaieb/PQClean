@@ -188,6 +188,7 @@ static void get_generator_poly(uint8_t *g) {
  */
 static void lfsr_encoder(uint8_t *em, const uint8_t *g, const uint8_t *m) {
     int gate_value = 0;
+    int index = 0;
     // Compute the Parity-check digits
     for (int i = PARAM_K - 1; i >= 0; --i) {
         gate_value = m[i] ^ em[PARAM_N1 - PARAM_K - 1];
@@ -206,7 +207,6 @@ static void lfsr_encoder(uint8_t *em, const uint8_t *g, const uint8_t *m) {
         em[0] = gate_value;
     }
     // Add the message
-    int index = 0;
     for (int i = PARAM_N1 - PARAM_K ;  i < PARAM_N1 ; ++i) {
         em[i] = m[index];
         index++;
@@ -255,34 +255,35 @@ static void array_to_codeword(uint8_t *v, const uint8_t *c) {
  * \param[in] em Pointer to an array that is supposed to be a code word
  */
 void PQCLEAN_HQC1281CCA2_LEAKTIME_bch_code_decode(uint8_t *m, const uint8_t *em) {
+    gf_tables tables;
+    syndrome_set synd_set;
+    sigma_poly sigma;
+    uint16_t error_pos [PARAM_DELTA];
+    uint16_t size = 0;
+    uint8_t e[VEC_N1_SIZE_BYTES] = {0};
+    uint8_t tmp[VEC_N1_SIZE_BYTES] = {0};
+
     // Generate Galois Field GF(2^10) using the primitive polynomial defined in PARAM_POLY
     // GF(2^10) is represented by the lookup tables (Log Anti-Log tables)
-    gf_tables tables;
     gf_tables_init(&tables);
     gf_generation(&tables);
 
     // Calculate the 2 * PARAM_DELTA syndromes
-    syndrome_set synd_set;
     syndrome_init(&synd_set);
     syndrome_gen(&synd_set, &tables, em);
 
     // Using the simplified Berlekamp's algorithm we compute the error location polynomial sigma(x)
-    sigma_poly sigma;
     sigma_poly_init(&sigma);
     get_error_location_poly(&sigma, &tables, &synd_set);
 
     // Compute the error location numbers using the Chien Search algorithm
-    uint16_t error_pos [PARAM_DELTA];
     memset(error_pos, 0, PARAM_DELTA * 2);
-    uint16_t size = 0;
     chien_search(error_pos, &size, &sigma, &tables);
 
     // Compute the error polynomial
-    uint8_t e[VEC_N1_SIZE_BYTES] = {0};
     error_poly_gen(e, error_pos, size);
 
     // Add the error polynomial and the received polynomial
-    uint8_t tmp[VEC_N1_SIZE_BYTES] = {0};
     PQCLEAN_HQC1281CCA2_LEAKTIME_vect_add(tmp, e, em, VEC_N1_SIZE_BYTES);
 
     // Find the message from the decoded code word
@@ -408,9 +409,10 @@ static void get_error_location_poly(sigma_poly *sigma, const gf_tables *tables, 
 
     uint32_t mu, tmp, l, d_rho = 1, d = synd_set->tab[0];
     sigma_poly sigma_rho, sigma_copy;
+    int k, pp = -1;
+
     sigma_poly_init(&sigma_rho);
     sigma_poly_init(&sigma_copy);
-    int k, pp = -1;
     // initializations
     sigma_rho.deg = 0;
     sigma_rho.value[0] = 1;
@@ -484,14 +486,13 @@ static void sigma_poly_copy(sigma_poly *p1, const sigma_poly *p2) {
  */
 static void chien_search(uint16_t *error_pos, uint16_t *size, sigma_poly *sigma, const gf_tables *tables) {
     int i = sigma->deg + 1;
+    int k = PARAM_GF_MUL_ORDER - PARAM_N1;
+    int tmp = 0;
+
     // Put the coordinates of the error location polynomial in the log format. Its better for multiplication.
     while (i--) {
         sigma->value[i] = gf_get_log(tables, sigma->value[i]);
     }
-
-    int k = PARAM_GF_MUL_ORDER - PARAM_N1;
-
-    int tmp = 0;
 
     // Compute sigma(alpha^k)
     for (uint16_t j = 1 ; j < sigma->deg + 1 ; ++j) {

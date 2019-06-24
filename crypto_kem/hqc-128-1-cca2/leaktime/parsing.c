@@ -41,8 +41,9 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_secret_key_to_string(unsigned char *sk, co
  */
 void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_secret_key_from_string(uint8_t *x, uint8_t *y, unsigned char *pk, const unsigned char *sk) {
     unsigned char sk_seed[SEED_BYTES];
-    memcpy(sk_seed, sk, SEED_BYTES);
     AES_XOF_struct sk_seedexpander;
+
+    memcpy(sk_seed, sk, SEED_BYTES);
     seedexpander_init(&sk_seedexpander, sk_seed, sk_seed + 32, SEEDEXPANDER_MAX_LENGTH);
 
     PQCLEAN_HQC1281CCA2_LEAKTIME_vect_fixed_weight(&sk_seedexpander, x, PARAM_OMEGA);
@@ -78,8 +79,9 @@ void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_public_key_to_string(unsigned char *pk, co
  */
 void PQCLEAN_HQC1281CCA2_LEAKTIME_hqc_public_key_from_string(uint8_t *h, uint8_t *s, const unsigned char *pk) {
     unsigned char pk_seed[SEED_BYTES];
-    memcpy(pk_seed, pk, SEED_BYTES);
     AES_XOF_struct pk_seedexpander;
+
+    memcpy(pk_seed, pk, SEED_BYTES);
     seedexpander_init(&pk_seedexpander, pk_seed, pk_seed + 32, SEEDEXPANDER_MAX_LENGTH);
     PQCLEAN_HQC1281CCA2_LEAKTIME_vect_set_random(&pk_seedexpander, h);
 
