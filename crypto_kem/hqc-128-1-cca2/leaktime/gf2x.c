@@ -9,7 +9,8 @@
  * - [bod]:  Marco Bodrato. Towards Optimal Toom-Cook Multiplication for Univariate
  *           and Multivariate Polynomials in Characteristic 2 and 0. WAIFI 2007.
  */
-// FIXME There are implicit assumptions about the multiplicants being balanced.
+
+// TODO There are implicit assumptions about the multiplicants being balanced.
 // The methods appear to work even when a_len == b_len + 2 or a_len == b_len + 1,
 // but this has not been rigourously tested.
 
@@ -33,15 +34,36 @@ typedef uint64_t word_t;
 #define REPAIR_MASK 0x7777777777777777
 #define TC2_CUTOFF 9
 
+// Karatsuba for multiplying two n-bit numbers (n > 1) requires memory
+//   K(2) = 4
+//   K(n) = 4 * ceil(n/2) + K(ceil(n/2))
+// which solves to (for the worst case when n = 2^k+1):
+//   K(n) <= 4*n - 4*k - 1.
+// so that
+//   K(9) <= 44,
+// and actually equality is achieved here.
+//
+// Toom-Cook-3 (word aligned) for multiplying two n-bit numbers (n > TC2_CUTOFF) requires memory
+//   T(10) = 54
+//   T(n) = 11 * ceil(n/3) + 10 + T(ceil(n/3) + 2)
+// which solves to (for the worst case when n = 2*3^k+4):
+//   T(n) <= 11 * floor(n/2) + 32*k - 33
+// so that (note: N_WORDS = 386)
+//   T(386) <= 2250,
+// although in reality T(386) = 2185, which could be hardcoded since N_WORDS is fixed.
+//
+// Wee need space K(9) + T(386):
+#define WORKSPACE_WORDS (44 + 2185)
+
 static void zero(word_t *c, size_t c_len);
 static void assign(word_t *c, const word_t *a, size_t a_len);
 static void add(word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len);
 static void add_inplace(word_t *c, const word_t *a, size_t a_len);
 static void mul_tc1(word_t *c, const word_t *a, size_t a_len, word_t b);
-static void mul_tc2(word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len);
+static void mul_tc2(word_t *ws, size_t ws_len, word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len);
 static void div_1_plus_W(word_t *c, size_t n);
-static void mul_tc3w(word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len);
-static void mul(word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len);
+static void mul_tc3w(word_t *ws, size_t ws_len, word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len);
+static void mul(word_t *ws, size_t ws_len, word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len);
 static void reduce(word_t *c);
 
 // c = 0
@@ -121,21 +143,25 @@ static void mul_tc1(word_t *c, const word_t *a, size_t a_len, word_t b) {
 
 // c := a * b
 // Few-word multiplication using Karatsuba (Toom-2)
-// TODO: assert no overlapping memory
-static void mul_tc2(word_t *c,
+static void mul_tc2(word_t *ws, size_t ws_len,
+                    word_t *c,
                     const word_t *a, size_t a_len,
                     const word_t *b, size_t b_len) {
-    // FIXME: memory overhead
-    word_t a01[TC2_CUTOFF];
-    word_t b01[TC2_CUTOFF];
-    word_t cc[2 * TC2_CUTOFF];
     size_t n = (a_len + 1) / 2;
+    word_t *a01 = ws;
+    word_t *b01 = ws + n;
+    word_t *cc = ws + 2 * n;
+    word_t *wsn = ws + 4 * n;
+    size_t wsn_len = ws_len - 4 * n;
+
+    assert(c + a_len + b_len <= a || a + a_len <= c);
+    assert(c + a_len + b_len <= b || b + b_len <= c);
 
     add(a01, a, n, a + n, a_len - n);
     add(b01, b, n, b + n, b_len - n);
-    mul(cc, a01, n, b01, n);
-    mul(c, a, n, b, n);
-    mul(c + 2 * n, a + n, a_len - n, b + n, b_len - n);
+    mul(wsn, wsn_len, cc, a01, n, b01, n);
+    mul(wsn, wsn_len, c, a, n, b, n);
+    mul(wsn, wsn_len, c + 2 * n, a + n, a_len - n, b + n, b_len - n);
     add_inplace(cc, c, 2 * n);
     add_inplace(cc, c + 2 * n, a_len + b_len - 2 * n);
     add_inplace(c + n, cc, 2 * n);
@@ -153,13 +179,24 @@ static void div_1_plus_W(word_t *c, size_t n) {
 // c := a * b
 // Many-word multiplication using Toom-Cook-3
 // Based on TC3W [bgtz] and balanced Toom-3 [bod]
-static void mul_tc3w(word_t *c,
+static void mul_tc3w(word_t *ws, size_t ws_len,
+                     word_t *c,
                      const word_t *a, size_t a_len,
                      const word_t *b, size_t b_len) {
-    // FIXME: too much memory overhead (VLA is not an option)
-    word_t c0[N_WORDS], c1[N_WORDS], c2[N_WORDS], c3[N_WORDS], c4[N_WORDS], c5[N_WORDS];
     size_t n = (a_len + 2) / 3;
-    size_t c4_len;
+    size_t c4_len = a_len + b_len - 4 * n;
+    word_t *c0 = ws;
+    word_t *c1 = ws + 2 * n;
+    word_t *c2 = ws + 4 * n;
+    word_t *c3 = ws + 6 * n + 4;
+    word_t *c4 = ws + 8 * n + 8;
+    word_t *c5 = ws + 10 * n + 8;
+    word_t *wsn = ws + 11 * n + 10;
+    word_t wsn_len = ws_len - 11 * n - 10;
+
+    assert(c + a_len + b_len <= a || a + a_len <= c);
+    assert(c + a_len + b_len <= b || b + b_len <= c);
+
     // a == a0 + a1X + a2X**2
     // b == b0 + b1X + b2X**2
 
@@ -182,7 +219,7 @@ static void mul_tc3w(word_t *c,
     add(c2, b, n, b + n, n);
     add_inplace(c2, b + 2 * n, b_len - 2 * n);
     // c1 [2n] = c2 * c5
-    mul(c1, c2, n, c5, n);
+    mul(wsn, wsn_len, c1, c2, n, c5, n);
     // c5 [n+2] = c5 + c0
     c5[n] = 0;
     c5[n + 1] = 0;
@@ -196,14 +233,13 @@ static void mul_tc3w(word_t *c,
     // c4 [n+2] = c4 + b0
     add_inplace(c4, b, n);
     // c3 [2n+4] = c2 * c5
-    mul(c3, c2, n + 2, c5, n + 2);
+    mul(wsn, wsn_len, c3, c2, n + 2, c5, n + 2);
     // c2 [2n+4] = c0 * c4
-    mul(c2, c0, n + 2, c4, n + 2);
+    mul(wsn, wsn_len, c2, c0, n + 2, c4, n + 2);
     // c0 [2n] = a0 * b0
-    mul(c0, a, n, b, n);
+    mul(wsn, wsn_len, c0, a, n, b, n);
     // c4 [c4_len] = a2 * b2
-    mul(c4, a + 2 * n, a_len - 2 * n, b + 2 * n, b_len - 2 * n);
-    c4_len = a_len + b_len - 4 * n;
+    mul(wsn, wsn_len, c4, a + 2 * n, a_len - 2 * n, b + 2 * n, b_len - 2 * n);
     // c3 [2n+2] = c3 + c2
     assert(c3[2 * n + 2] == c2[2 * n + 2] && c3[2 * n + 3] == c2[2 * n + 3]);
     add_inplace(c3, c2, 2 * n + 2);
@@ -240,15 +276,15 @@ static void mul_tc3w(word_t *c,
 
 // generic multiplication function: depending on the sizes of the
 // input it will call the fastest function for that size.
-static void mul(word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len) {
+static void mul(word_t *ws, size_t ws_len, word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len) {
     if (b_len == 0) {
-        zero(c, a_len); // TODO: inefficient, better have a separate subroutine so this doesn't happen.
+        zero(c, a_len);
     } else if (b_len == 1) {
         mul_tc1(c, a, a_len, b[0]);
-    } else if (b_len < TC2_CUTOFF) {
-        mul_tc2(c, a, a_len, b, b_len);
+    } else if (b_len <= TC2_CUTOFF) {
+        mul_tc2(ws, ws_len, c, a, a_len, b, b_len);
     } else {
-        mul_tc3w(c, a, a_len, b, b_len);
+        mul_tc3w(ws, ws_len, c, a, a_len, b, b_len);
     }
 }
 
@@ -281,13 +317,14 @@ static void reduce(word_t *c) {
  */
 void PQCLEAN_HQC1281CCA2_LEAKTIME_ntl_cyclic_product(uint8_t *o, const uint8_t *v1, const uint8_t *v2) {
     word_t c[2 * N_WORDS], a[N_WORDS], b[N_WORDS];
+    word_t ws[WORKSPACE_WORDS];
 
     memcpy(a, v1, VEC_N_SIZE_BYTES);
     memcpy(b, v2, VEC_N_SIZE_BYTES);
     a[N_WORDS - 1] &= TAIL_MASK;
     b[N_WORDS - 1] &= TAIL_MASK;
 
-    mul(c, a, N_WORDS, b, N_WORDS);
+    mul(ws, WORKSPACE_WORDS, c, a, N_WORDS, b, N_WORDS);
     reduce(c);
 
     memcpy(o, c, VEC_N_SIZE_BYTES);
