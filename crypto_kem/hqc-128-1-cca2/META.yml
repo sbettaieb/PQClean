@@ -17,6 +17,7 @@ principal-submitters:
   - Philippe Gaborit
   - Edoardo Persichetti
   - Gilles Zémor
+auxiliary-submitters: []
 implementations:
   - name: leaktime
     version: http://pqc-hqc.org/doc/hqc-reference-implementation_2019-04-10.zip
