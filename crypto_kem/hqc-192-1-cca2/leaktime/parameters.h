@@ -94,4 +94,27 @@
 #define BCH_MSG_MASK_M1                     0xC0
 #define BCH_MSG_MASK_M2                     0x3F
 
+// # Workspace memory requirements for the fast multiplication algorithms
+//
+// Karatsuba for multiplying two n-bit numbers (n > 1) requires memory
+//   K(2) = 4
+//   K(n) = 4 * ceil(n/2) + K(ceil(n/2))
+// which solves to (for the worst case when n = 2^k+1):
+//   K(n) <= 4*n - 4*k - 1.
+// so that (note: TC_CUTOFF = 9)
+//   K(9) <= 44,
+// and actually equality is achieved here.
+//
+// Toom-Cook-3 (word aligned) for multiplying two n-bit numbers (n > TC2_CUTOFF) requires memory
+//   T(10) = 54
+//   T(n) = 11 * ceil(n/3) + 10 + T(ceil(n/3) + 2)
+// which solves to (for the worst case when n = 2*3^k+4):
+//   T(n) <= 11 * floor(n/2) + 32*k - 33
+// so that (note: N_WORDS = 683)
+//   T(683) <= 3878,
+// although in reality T(683) = 3856, which could be hardcoded since N_WORDS is fixed.
+//
+// Wee need space K(9) + T(683):
+#define GF2X_WORKSPACE_WORDS (44 + 3856)
+
 #endif

@@ -5,7 +5,7 @@ consistency_checks:
   files:
     - bch.c
     - bch.h
-      # TODO - gf2x.c
+    - gf2x.c
     - gf2x.h
     - hqc.c
     - hqc.h

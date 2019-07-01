@@ -34,27 +34,6 @@ typedef uint64_t word_t;
 #define REPAIR_MASK 0x7777777777777777
 #define TC2_CUTOFF 9
 
-// Karatsuba for multiplying two n-bit numbers (n > 1) requires memory
-//   K(2) = 4
-//   K(n) = 4 * ceil(n/2) + K(ceil(n/2))
-// which solves to (for the worst case when n = 2^k+1):
-//   K(n) <= 4*n - 4*k - 1.
-// so that
-//   K(9) <= 44,
-// and actually equality is achieved here.
-//
-// Toom-Cook-3 (word aligned) for multiplying two n-bit numbers (n > TC2_CUTOFF) requires memory
-//   T(10) = 54
-//   T(n) = 11 * ceil(n/3) + 10 + T(ceil(n/3) + 2)
-// which solves to (for the worst case when n = 2*3^k+4):
-//   T(n) <= 11 * floor(n/2) + 32*k - 33
-// so that (note: N_WORDS = 386)
-//   T(386) <= 2250,
-// although in reality T(386) = 2185, which could be hardcoded since N_WORDS is fixed.
-//
-// Wee need space K(9) + T(386):
-#define WORKSPACE_WORDS (44 + 2185)
-
 static void zero(word_t *c, size_t c_len);
 static void assign(word_t *c, const word_t *a, size_t a_len);
 static void add(word_t *c, const word_t *a, size_t a_len, const word_t *b, size_t b_len);
@@ -317,14 +296,14 @@ static void reduce(word_t *c) {
  */
 void PQCLEAN_HQC1281CCA2_LEAKTIME_ntl_cyclic_product(uint8_t *o, const uint8_t *v1, const uint8_t *v2) {
     word_t c[2 * N_WORDS], a[N_WORDS], b[N_WORDS];
-    word_t ws[WORKSPACE_WORDS];
+    word_t ws[GF2X_WORKSPACE_WORDS];
 
     memcpy(a, v1, VEC_N_SIZE_BYTES);
     memcpy(b, v2, VEC_N_SIZE_BYTES);
     a[N_WORDS - 1] &= TAIL_MASK;
     b[N_WORDS - 1] &= TAIL_MASK;
 
-    mul(ws, WORKSPACE_WORDS, c, a, N_WORDS, b, N_WORDS);
+    mul(ws, GF2X_WORKSPACE_WORDS, c, a, N_WORDS, b, N_WORDS);
     reduce(c);
 
     memcpy(o, c, VEC_N_SIZE_BYTES);
