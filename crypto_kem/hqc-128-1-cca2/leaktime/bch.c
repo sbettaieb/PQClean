@@ -158,14 +158,7 @@ static void message_to_array(uint8_t *o, const uint8_t *v) {
 static void get_generator_poly(uint8_t *g) {
     uint8_t g_bytes_size = (PARAM_G / 8) + 1;
     // The generator polynomial g(x) of the BCH code
-    uint8_t tmp[(PARAM_G / 8) + 1] = { 0xDA, 0x15, 0xFB, 0x7C, 0x96, 0x9C, 0xE2,
-                                       0xAC, 0xA4, 0x7F, 0x3D, 0x5A, 0x5C, 0x78, 0xBD, 0x3D, 0x13, 0xE8, 0xB1,
-                                       0x48, 0xD5, 0xB3, 0x94, 0x9A, 0x18, 0x5B, 0x47, 0x59, 0xB1, 0x62, 0x04,
-                                       0x32, 0x33, 0x89, 0xE0, 0xCB, 0xF7, 0x33, 0xE1, 0x75, 0x0C, 0x22, 0xAC,
-                                       0x58, 0x93, 0x29, 0xE6, 0x6B, 0x00, 0xB0, 0x35, 0x07, 0x5B, 0xDD, 0xBE,
-                                       0x4C, 0x0A, 0x0B, 0xE7, 0x0B, 0xC9, 0xF0, 0x02, 0xB4, 0xB0, 0x7A, 0x42,
-                                       0x08
-                                     };
+    uint8_t tmp[(PARAM_G / 8) + 1] = BCH_GEN_POLY;
 
     for (size_t i = 0; i < (size_t)(g_bytes_size - 1); ++i) {
         for (size_t j = 0; j < 8; ++j) {
@@ -551,8 +544,8 @@ static void error_poly_gen(uint8_t *e, const uint16_t *error_pos, uint16_t size)
 static void message_from_codeword(uint8_t *o, const uint8_t *v) {
     size_t val = PARAM_N1 - PARAM_K;
 
-    uint8_t mask_m1 = 0xF0;
-    uint8_t mask_m2 = 0x0F;
+    uint8_t mask_m1 = BCH_MSG_MASK_M1;
+    uint8_t mask_m2 = BCH_MSG_MASK_M2;
 
     for (size_t i = 0 ; i < VEC_K_SIZE_BYTES ; ++i) {
         size_t index = (val / 8) + i ;

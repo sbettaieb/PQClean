@@ -3,7 +3,7 @@ consistency_checks:
     scheme: hqc-128-1-cca2
     implementation: leaktime
   files:
-      # TODO - bch.c
+    - bch.c
     - bch.h
       # TODO - gf2x.c
     - gf2x.h
