@@ -61,7 +61,7 @@ void PQCLEAN_HQC2561CCA2_LEAKTIME_hqc_pke_keygen(uint8_t *pk, uint8_t *sk) {
  *\fn void PQCLEAN_HQC2561CCA2_LEAKTIME_hqc_pke_encrypt(uint8_t* u, uint8_t* v, uint8_t* m, uint8_t* theta, const uint8_t* pk)
  *\brief Encryption of the HQC_PKE IND_CPA scheme
  *
- * The cihertext is composed of vectors <b>u</b> and <b>v</b>.
+ * The ciphertext is composed of vectors <b>u</b> and <b>v</b>.
  *
  * \param[out] u Vector u (first part of the ciphertext)
  * \param[out] v Vector v (second part of the ciphertext)
