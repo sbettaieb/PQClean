@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "hash_state.h"
 #include "params.h"
 
 /**
@@ -13,7 +14,7 @@ void PQCLEAN_SPHINCSSHAKE256128SSIMPLE_CLEAN_fors_sign(
     unsigned char *sig, unsigned char *pk,
     const unsigned char *m,
     const unsigned char *sk_seed, const unsigned char *pub_seed,
-    const uint32_t fors_addr[8]);
+    const uint32_t fors_addr[8], const hash_state *hash_state_seeded);
 
 /**
  * Derives the FORS public key from a signature.
@@ -25,6 +26,7 @@ void PQCLEAN_SPHINCSSHAKE256128SSIMPLE_CLEAN_fors_sign(
 void PQCLEAN_SPHINCSSHAKE256128SSIMPLE_CLEAN_fors_pk_from_sig(
     unsigned char *pk,
     const unsigned char *sig, const unsigned char *m,
-    const unsigned char *pub_seed, const uint32_t fors_addr[8]);
+    const unsigned char *pub_seed, const uint32_t fors_addr[8],
+    const hash_state *hash_state_seeded);
 
 #endif

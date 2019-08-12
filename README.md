@@ -130,7 +130,7 @@ Their integration strategies may serve as examples for your own projects.
 
 - **[pqcrypto crate](https://github.com/rustpq/pqcrypto)**: Rust integration that automatically generates wrappers from PQClean source code.
 - **[mupq](https://github.com/mupq/)**: Runs the implementations from PQClean as reference implementations to compare with microcontroller-optimized code.
-- **[Open Quantum Safe](https://github.com/open-quantum-safe/)**: The Open Quantum Safe project integrates implementations from PQClean into their [liboqs](https://github.com/open-quantum-safe/liboqs) C library, which then exposes them via [C++](https://github.com/open-quantum-safe/liboqs-cpp), [C# / .NET](https://github.com/open-quantum-safe/liboqs-dotnet), and [Python](https://github.com/open-quantum-safe/liboqs-python) wrappers, as well as to forks of [OpenSSL](https://github.com/open-quantum-safe/openssl) and [OpenSSH](https://github.com/open-quantum-safe/openssh-portable).
+- **[Open Quantum Safe](https://github.com/open-quantum-safe/)**: The Open Quantum Safe project integrates implementations from PQClean into their [liboqs](https://github.com/open-quantum-safe/liboqs/) C library, which then exposes them via [C++](https://github.com/open-quantum-safe/liboqs-cpp), [C# / .NET](https://github.com/open-quantum-safe/liboqs-dotnet), and [Python](https://github.com/open-quantum-safe/liboqs-python) wrappers, as well as to forks of [OpenSSL](https://github.com/open-quantum-safe/openssl) and [OpenSSH](https://github.com/open-quantum-safe/openssh-portable).
 
 ## License
 
@@ -146,7 +146,9 @@ While we run extensive automatic testing on [Circle CI][circleci-pqc] (Linux bui
 To do this, make sure the following is installed:
 
 * Python 3.5+
-* `nosetests` or `nose2` (either for Python 3)
+* `pytest` for python 3.
+
+We also recommend installing ``pytest-xdist`` to allow running tests in parallel.
 
 You will also need to make sure the submodules are initialized by running:
 
@@ -154,8 +156,7 @@ You will also need to make sure the submodules are initialized by running:
 git submodule update --init
 ```
 
-Run the Python-based tests by going into the `test` directory and running `nosetests -v` or `nose2 -B -v`, depending on what you installed.
-If you have the `rednose` plugin for `nosetests` installed, run `nosetests --rednose` to get colored output.
+Run the Python-based tests by going into the `test` directory and running `pytest -v` or (recommended) `pytest -n=auto` for parallel testing.
 
 You may also run `python3 <testmodule>` where `<testmodule>` is any of the files starting with `test_` in the `test/` folder.
 
