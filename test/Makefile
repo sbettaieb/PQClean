@@ -57,14 +57,7 @@ $(DEST_DIR)/test_common_fips202: test_common/fips202.c $(COMMON_FILES)
 $(DEST_DIR)/test_common_sha2: test_common/sha2.c $(COMMON_FILES)
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
-<<<<<<< HEAD
-$(DEST_DIR)/test_common_nistseedexpander.c: common/nistseedexpander.c $(COMMON_FILES)
-	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
-$(DEST_DIR)/test_common_sp800-185: common/sp800-185.c $(COMMON_FILES)
-=======
 $(DEST_DIR)/test_common_sp800-185: test_common/sp800-185.c $(COMMON_FILES)
->>>>>>> master
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
 
