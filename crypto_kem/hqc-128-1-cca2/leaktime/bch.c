@@ -75,7 +75,7 @@ static void get_generator_poly(uint8_t *g);
  * \param[in] i Integer
  * \return integer corresponding to the Anti-Log value of i
  */
-static int16_t gf_get_antilog(const gf_tables *tables, int16_t i) {
+static int16_t gf_get_antilog(const gf_tables *tables, size_t i) {
     return tables->antilog_tab[i];
 }
 
