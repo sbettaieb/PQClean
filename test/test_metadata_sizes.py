@@ -9,7 +9,7 @@ import pqclean
 
 @pytest.mark.parametrize(
     'implementation,test_dir,impl_path, init, destr',
-    [(impl, *helpers.isolate_test_files(impl.path(), 'test_functest_'))
+    [(impl, *helpers.isolate_test_files(impl.path(), 'test_printparams_'))
      for impl in pqclean.Scheme.all_implementations()],
     ids=[str(impl) for impl in pqclean.Scheme.all_implementations()],
 )
@@ -37,6 +37,7 @@ def test_metadata_sizes(implementation, impl_path, test_dir, init, destr):
 
     assert parsed['CRYPTO_SECRETKEYBYTES'] == metadata['length-secret-key']
     assert parsed['CRYPTO_PUBLICKEYBYTES'] == metadata['length-public-key']
+    assert parsed['CRYPTO_ALGNAME'] == metadata['name']
 
     if implementation.scheme.type == 'kem':
         assert (

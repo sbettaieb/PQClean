@@ -5,9 +5,8 @@ consistency_checks:
   files:
     - blas_comm.c
     - blas_comm.h
+    - blas.c
     - blas.h
-    - blas_u32.c
-    - blas_u32.h
     - gf.c
     - gf.h
     - parallel_matrix_op.c
@@ -20,9 +19,8 @@ consistency_checks:
   files:
     - blas_comm.c
     - blas_comm.h
+    - blas.c
     - blas.h
-    - blas_u32.c
-    - blas_u32.h
     - gf.c
     - gf.h
     - parallel_matrix_op.c
@@ -35,9 +33,8 @@ consistency_checks:
   files:
     - blas_comm.c
     - blas_comm.h
+    - blas.c
     - blas.h
-    - blas_u32.c
-    - blas_u32.h
     - gf.c
     - gf.h
     - parallel_matrix_op.c
@@ -49,9 +46,8 @@ consistency_checks:
   files:
     - blas_comm.c
     - blas_comm.h
+    - blas.c
     - blas.h
-    - blas_u32.c
-    - blas_u32.h
     - gf.c
     - gf.h
     - parallel_matrix_op.c
@@ -63,9 +59,8 @@ consistency_checks:
   files:
     - blas_comm.c
     - blas_comm.h
+    - blas.c
     - blas.h
-    - blas_u32.c
-    - blas_u32.h
     - gf.c
     - gf.h
     - parallel_matrix_op.c
