@@ -19,5 +19,7 @@ principal-submitters:
   - Gilles Zémor
 auxiliary-submitters: []
 implementations:
-  - name: leaktime
-    version: http://pqc-hqc.org/doc/hqc-reference-implementation_2019-04-10.zip
+  - name: avx2_leaktime
+    version: 
+  - name: ref_leaktime
+    version: 
