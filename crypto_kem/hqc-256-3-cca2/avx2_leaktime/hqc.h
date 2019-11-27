@@ -1,5 +1,5 @@
-#ifndef HQC_H
-#define HQC_H
+#ifndef PQCLEAN_HQC2563CCA2_AVX2_LEAKTIME_HQC_H
+#define PQCLEAN_HQC2563CCA2_AVX2_LEAKTIME_HQC_H
 
 /**
  * @file hqc.h

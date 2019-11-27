@@ -22,3 +22,26 @@ consistency_checks:
     - tensor.h
     - vector.c
     - vector.h
+- source:
+    scheme: hqc-256-3-cca2
+    implementation: leaktime
+  files:
+    - api.h
+    - bch.c
+    - bch.h
+    - fft.c
+    - fft.h
+    - gf.c
+    - gf.h
+    - hqc.c
+    - hqc.h
+    - kem.c
+    - parameters.h
+    - parsing.c
+    - parsing.h
+    - repetition.c
+    - repetition.h
+    - tensor.c
+    - tensor.h
+    - vector.c
+    - vector.h

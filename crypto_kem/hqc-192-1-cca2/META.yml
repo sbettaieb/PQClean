@@ -19,7 +19,13 @@ principal-submitters:
   - Gilles Zémor
 auxiliary-submitters: []
 implementations:
+  - name: leaktime
+    version: https://pqc-hqc.org/doc/hqc-reference-implementation_2019-08-24.zip
   - name: avx2_leaktime
-    version: 
-  - name: ref_leaktime
-    version: 
+    version: https://pqc-hqc.org/doc/hqc-optimized-implementation_2019-08-24.zip
+    supported_platforms:
+      - architecture: x86_64 
+        operating_systems:
+          - Linux
+        required_flags:
+          - avx2

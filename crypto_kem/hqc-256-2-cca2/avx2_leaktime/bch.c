@@ -3,13 +3,13 @@
  * Constant time implementation of BCH codes
  */
 
-#include <stdint.h>
-#include <string.h>
 #include "bch.h"
 #include "fft.h"
 #include "gf.h"
 #include "parameters.h"
 #include "vector.h"
+#include <stdint.h>
+#include <string.h>
 
 static void unpack_message(uint8_t *message_unpacked, const uint8_t *message);
 static void lfsr_encode(uint8_t *codeword, const uint8_t *message);
@@ -27,15 +27,15 @@ static void compute_roots(uint8_t *error, const uint16_t *sigma);
  * @param[in] message Array of PARAM_K bytes storing the packed message
  */
 static void unpack_message(uint8_t *message_unpacked, const uint8_t *message) {
-  for(size_t i = 0 ; i < (VEC_K_SIZE_BYTES - (PARAM_K % 8 != 0)) ; ++i) {
-    for(size_t j = 0 ; j < 8 ; ++j) {
-      message_unpacked[j + 8*i] = (message[i] >> j) & 0x01;
+    for (size_t i = 0 ; i < (VEC_K_SIZE_BYTES - (PARAM_K % 8 != 0)) ; ++i) {
+        for (size_t j = 0 ; j < 8 ; ++j) {
+            message_unpacked[j + 8 * i] = (message[i] >> j) & 0x01;
+        }
     }
-  }
 
-  for(int8_t j = 0 ; j < PARAM_K % 8 ; ++j) {
-    message_unpacked[j + 8*(VEC_K_SIZE_BYTES - 1)] = (message[VEC_K_SIZE_BYTES - 1] >> j) & 0x01;
-  }
+    for (int8_t j = 0 ; j < PARAM_K % 8 ; ++j) {
+        message_unpacked[j + 8 * (VEC_K_SIZE_BYTES - 1)] = (message[VEC_K_SIZE_BYTES - 1] >> j) & 0x01;
+    }
 }
 
 
@@ -47,22 +47,22 @@ static void unpack_message(uint8_t *message_unpacked, const uint8_t *message) {
  * @param[in] message Array of PARAM_K bytes storing the message to encode
  */
 static void lfsr_encode(uint8_t *codeword, const uint8_t *message) {
-  uint8_t gate_value = 0;
-  uint8_t bch_poly[PARAM_G] = PARAM_BCH_POLY;
+    uint8_t gate_value = 0;
+    uint8_t bch_poly[PARAM_G] = PARAM_BCH_POLY;
 
-  // Compute the Parity-check digits
-  for(int16_t i = PARAM_K - 1 ; i >= 0 ; --i) {
-    gate_value = message[i] ^ codeword[PARAM_N1 - PARAM_K - 1];
+    // Compute the Parity-check digits
+    for (int16_t i = PARAM_K - 1 ; i >= 0 ; --i) {
+        gate_value = message[i] ^ codeword[PARAM_N1 - PARAM_K - 1];
 
-    for(size_t j = PARAM_N1 - PARAM_K - 1 ; j ; --j) {
-      codeword[j] = codeword[j - 1] ^ (-gate_value & bch_poly[j]);
+        for (size_t j = PARAM_N1 - PARAM_K - 1 ; j ; --j) {
+            codeword[j] = codeword[j - 1] ^ (-gate_value & bch_poly[j]);
+        }
+
+        codeword[0] = gate_value;
     }
 
-    codeword[0] = gate_value; 
-  }
-  
-  // Add the message 
-  memcpy(codeword + PARAM_N1 - PARAM_K, message, PARAM_K);
+    // Add the message
+    memcpy(codeword + PARAM_N1 - PARAM_K, message, PARAM_K);
 }
 
 
@@ -74,15 +74,15 @@ static void lfsr_encode(uint8_t *codeword, const uint8_t *message) {
  * @param[in] codeword_unpacked Array of PARAM_N1 bytes storing the unpacked codeword
  */
 static void pack_codeword(uint8_t *codeword, const uint8_t *codeword_unpacked) {
-  for(size_t i = 0 ; i < (VEC_N1_SIZE_BYTES - (PARAM_N1 % 8 != 0)) ; ++i) {
-    for(size_t j = 0 ; j < 8 ; ++j) {
-      codeword[i] |= codeword_unpacked[j + 8*i] << j;
+    for (size_t i = 0 ; i < (VEC_N1_SIZE_BYTES - (PARAM_N1 % 8 != 0)) ; ++i) {
+        for (size_t j = 0 ; j < 8 ; ++j) {
+            codeword[i] |= codeword_unpacked[j + 8 * i] << j;
+        }
     }
-  }
 
-  for(size_t j = 0 ; j < PARAM_N1 % 8 ; ++j) {
-    codeword[VEC_N1_SIZE_BYTES - 1] |= codeword_unpacked[j + 8*(VEC_N1_SIZE_BYTES - 1)] << j;
-  }
+    for (size_t j = 0 ; j < PARAM_N1 % 8 ; ++j) {
+        codeword[VEC_N1_SIZE_BYTES - 1] |= codeword_unpacked[j + 8 * (VEC_N1_SIZE_BYTES - 1)] << j;
+    }
 }
 
 
@@ -98,12 +98,12 @@ static void pack_codeword(uint8_t *codeword, const uint8_t *codeword_unpacked) {
  * @param[in] message Array of size VEC_K_SIZE_BYTES storing the message
  */
 void PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_bch_code_encode(uint8_t *codeword, const uint8_t *message) {
-  uint8_t message_unpacked[PARAM_K];
-  uint8_t codeword_unpacked[PARAM_N1] = {0};
-        
-  unpack_message(message_unpacked, message);
-  lfsr_encode(codeword_unpacked, message_unpacked);
-  pack_codeword(codeword, codeword_unpacked);
+    uint8_t message_unpacked[PARAM_K];
+    uint8_t codeword_unpacked[PARAM_N1] = {0};
+
+    unpack_message(message_unpacked, message);
+    lfsr_encode(codeword_unpacked, message_unpacked);
+    pack_codeword(codeword, codeword_unpacked);
 }
 
 
@@ -125,61 +125,61 @@ void PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_bch_code_encode(uint8_t *codeword, const 
  * @param[in] syndromes Array of size (at least) 2*PARAM_DELTA storing the syndromes
  */
 static size_t compute_elp(uint16_t *sigma, const uint16_t *syndromes) {
-  sigma[0] = 1;
-  size_t deg_sigma = 0;
-  size_t deg_sigma_p = 0;
-  uint16_t sigma_copy[PARAM_DELTA - 1] = {0};
-  size_t deg_sigma_copy = 0;
-  uint16_t X_sigma_p[PARAM_DELTA + 1] = {0, 1};
-  int32_t pp = -1; // 2*rho
-  uint16_t d_p = 1;
-  uint16_t d = syndromes[0];
-        
-  for(size_t mu = 0 ; mu < PARAM_DELTA ; ++mu) {
-    // Save sigma in case we need it to update X_sigma_p
-    memcpy(sigma_copy, sigma, 2*(PARAM_DELTA - 1));
-    deg_sigma_copy = deg_sigma;
+    sigma[0] = 1;
+    size_t deg_sigma = 0;
+    size_t deg_sigma_p = 0;
+    uint16_t sigma_copy[PARAM_DELTA - 1] = {0};
+    size_t deg_sigma_copy = 0;
+    uint16_t X_sigma_p[PARAM_DELTA + 1] = {0, 1};
+    int32_t pp = -1; // 2*rho
+    uint16_t d_p = 1;
+    uint16_t d = syndromes[0];
 
-    uint16_t dd = PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_mul(d, PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_inverse(d_p)); // 0 if(d == 0)
-    for(size_t i = 1 ; (i <= 2*mu + 1) && (i <= PARAM_DELTA) ; ++i) {
-      sigma[i] ^= PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_mul(dd, X_sigma_p[i]);
+    for (size_t mu = 0 ; mu < PARAM_DELTA ; ++mu) {
+        // Save sigma in case we need it to update X_sigma_p
+        memcpy(sigma_copy, sigma, 2 * (PARAM_DELTA - 1));
+        deg_sigma_copy = deg_sigma;
+
+        uint16_t dd = PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_mul(d, PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_inverse(d_p)); // 0 if(d == 0)
+        for (size_t i = 1 ; (i <= 2 * mu + 1) && (i <= PARAM_DELTA) ; ++i) {
+            sigma[i] ^= PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_mul(dd, X_sigma_p[i]);
+        }
+
+        size_t deg_X = 2 * mu - pp; // 2*(mu-rho)
+        size_t deg_X_sigma_p = deg_X + deg_sigma_p;
+
+        // mask1 = 0xffff if(d != 0) and 0 otherwise
+        int16_t mask1 = -((uint16_t) - d >> 15);
+
+        // mask2 = 0xffff if(deg_X_sigma_p > deg_sigma) and 0 otherwise
+        int16_t mask2 = -((uint16_t) (deg_sigma - deg_X_sigma_p) >> 15);
+
+        // mask12 = 0xffff if the deg_sigma increased and 0 otherwise
+        int16_t mask12 = mask1 & mask2;
+        deg_sigma = (mask12 & deg_X_sigma_p) ^ (~mask12 & deg_sigma);
+
+        if (mu == PARAM_DELTA - 1) {
+            break;
+        }
+
+        // Update pp, d_p and X_sigma_p if needed
+        pp = (mask12 & (2 * mu)) ^ (~mask12 & pp);
+        d_p = (mask12 & d) ^ (~mask12 & d_p);
+        for (size_t i = PARAM_DELTA - 1 ; i ; --i) {
+            X_sigma_p[i + 1] = (mask12 & sigma_copy[i - 1]) ^ (~mask12 & X_sigma_p[i - 1]);
+        }
+        X_sigma_p[1] = 0;
+        X_sigma_p[0] = 0;
+        deg_sigma_p = (mask12 & deg_sigma_copy) ^ (~mask12 & deg_sigma_p);
+
+        // Compute the next discrepancy
+        d = syndromes[2 * mu + 2];
+        for (size_t i = 1 ; (i <= 2 * mu + 1) && (i <= PARAM_DELTA) ; ++i) {
+            d ^= PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_mul(sigma[i], syndromes[2 * mu + 2 - i]);
+        }
     }
-    
-    size_t deg_X = 2*mu - pp; // 2*(mu-rho)
-    size_t deg_X_sigma_p = deg_X + deg_sigma_p;
-                
-    // mask1 = 0xffff if(d != 0) and 0 otherwise
-    int16_t mask1 = -((uint16_t) -d >> 15);
 
-    // mask2 = 0xffff if(deg_X_sigma_p > deg_sigma) and 0 otherwise
-    int16_t mask2 = -((uint16_t) (deg_sigma - deg_X_sigma_p) >> 15);
-
-    // mask12 = 0xffff if the deg_sigma increased and 0 otherwise
-    int16_t mask12 = mask1 & mask2;
-    deg_sigma = (mask12 & deg_X_sigma_p) ^ (~mask12 & deg_sigma);
-
-    if(mu == PARAM_DELTA - 1) {
-      break;
-    }
-
-    // Update pp, d_p and X_sigma_p if needed
-    pp = (mask12 & (2*mu)) ^ (~mask12 & pp);
-    d_p = (mask12 & d) ^ (~mask12 & d_p);
-    for(size_t i = PARAM_DELTA - 1 ; i ; --i) {
-      X_sigma_p[i + 1] = (mask12 & sigma_copy[i - 1]) ^ (~mask12 & X_sigma_p[i - 1]);
-    }
-    X_sigma_p[1] = 0;
-    X_sigma_p[0] = 0;
-    deg_sigma_p = (mask12 & deg_sigma_copy) ^ (~mask12 & deg_sigma_p);
-
-    // Compute the next discrepancy
-    d = syndromes[2*mu + 2];
-    for(size_t i = 1 ; (i <= 2*mu + 1) && (i <= PARAM_DELTA) ; ++i) {
-      d ^= PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_mul(sigma[i], syndromes[2*mu+2-i]);
-    }
-  }
-  
-  return deg_sigma;
+    return deg_sigma;
 }
 
 
@@ -193,28 +193,27 @@ static size_t compute_elp(uint16_t *sigma, const uint16_t *syndromes) {
  * @param[in] codeword Array of size VEC_N1_SIZE_BYTES storing the codeword
  */
 static void message_from_codeword(uint8_t *message, const uint8_t *codeword) {
-  int32_t val = PARAM_N1 - PARAM_K;
+    int32_t val = PARAM_N1 - PARAM_K;
 
-  uint8_t mask1 = 0xff << val % 8;
-  uint8_t mask2 = 0xff >> (8 - val % 8);
-  size_t index = val / 8;
+    uint8_t mask1 = 0xff << val % 8;
+    uint8_t mask2 = 0xff >> (8 - val % 8);
+    size_t index = val / 8;
 
-  for(size_t i = 0 ; i < VEC_K_SIZE_BYTES - 1 ; ++i) {
-    uint8_t message1 = (codeword[index] & mask1) >> val % 8;
-    uint8_t message2 = (codeword[++index] & mask2) << (8 - val % 8);
-    message[i] = message1 | message2;
-  }
+    for (size_t i = 0 ; i < VEC_K_SIZE_BYTES - 1 ; ++i) {
+        uint8_t message1 = (codeword[index] & mask1) >> val % 8;
+        uint8_t message2 = (codeword[++index] & mask2) << (8 - val % 8);
+        message[i] = message1 | message2;
+    }
 
-  // Last byte (8-val % 8 is the number of bits given by message1)
-  if((PARAM_K % 8 == 0) || (8 - val % 8 < PARAM_K % 8)) { 
-    uint8_t message1 = (codeword[index] & mask1) >> val % 8;
-    uint8_t message2 = (codeword[++index] & mask2) << (8 - val % 8);
-    message[VEC_K_SIZE_BYTES - 1] = message1 | message2;
-  }
-  else {
-    uint8_t message1 = (codeword[index] & mask1) >> val % 8;
-    message[VEC_K_SIZE_BYTES - 1] = message1;
-  }
+    // Last byte (8-val % 8 is the number of bits given by message1)
+    if ((PARAM_K % 8 == 0) || (8 - val % 8 < PARAM_K % 8)) {
+        uint8_t message1 = (codeword[index] & mask1) >> val % 8;
+        uint8_t message2 = (codeword[++index] & mask2) << (8 - val % 8);
+        message[VEC_K_SIZE_BYTES - 1] = message1 | message2;
+    } else {
+        uint8_t message1 = (codeword[index] & mask1) >> val % 8;
+        message[VEC_K_SIZE_BYTES - 1] = message1;
+    }
 }
 
 
@@ -233,10 +232,10 @@ static void message_from_codeword(uint8_t *message, const uint8_t *codeword) {
  * @param[in] vector Array of size VEC_N1_SIZE_BYTES storing the received word
  */
 static void compute_syndromes(uint16_t *syndromes, const uint8_t *vector) {
-  uint16_t w[1 << PARAM_M];
+    uint16_t w[1 << PARAM_M];
 
-  PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_fft_t_preprocess_bch_codeword(w, vector);
-  PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_fft_t(syndromes, w, 2*PARAM_DELTA);
+    PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_fft_t_preprocess_bch_codeword(w, vector);
+    PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_fft_t(syndromes, w, 2 * PARAM_DELTA);
 }
 
 
@@ -250,16 +249,16 @@ static void compute_syndromes(uint16_t *syndromes, const uint8_t *vector) {
  * @param[in] sigma Array of 2^PARAM_FFT elements storing the error locator polynomial
  */
 static void compute_roots(uint8_t *error, const uint16_t *sigma) {
-  uint16_t w[1 << PARAM_M] = {0}; // w will receive the evaluation of sigma in all field elements
+    uint16_t w[1 << PARAM_M] = {0}; // w will receive the evaluation of sigma in all field elements
 
-  PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_fft(w, sigma, PARAM_DELTA + 1);
-  PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_fft_retrieve_bch_error_poly(error, w);
+    PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_fft(w, sigma, PARAM_DELTA + 1);
+    PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_fft_retrieve_bch_error_poly(error, w);
 }
 
 
 
 /**
- * @brief Decodes the received word 
+ * @brief Decodes the received word
  *
  * This function relies on four steps:
  *    <ol>
@@ -274,23 +273,23 @@ static void compute_roots(uint8_t *error, const uint16_t *sigma) {
  * @param[in] vector Array of size VEC_N1_SIZE_BYTES storing the received word
  */
 void PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_bch_code_decode(uint8_t *message, uint8_t *vector) {
-  uint16_t syndromes[1 << PARAM_FFT_T];
-  uint16_t sigma[1 << PARAM_FFT] = {0};
-  uint8_t error[(1 << PARAM_M) / 8] = {0};
+    uint16_t syndromes[1 << PARAM_FFT_T];
+    uint16_t sigma[1 << PARAM_FFT] = {0};
+    uint8_t error[(1 << PARAM_M) / 8] = {0};
 
-  // Calculate the 2*PARAM_DELTA syndromes
-  compute_syndromes(syndromes, vector);
+    // Calculate the 2*PARAM_DELTA syndromes
+    compute_syndromes(syndromes, vector);
 
-  // Compute the error locator polynomial sigma
-  // Sigma's degree is at most PARAM_DELTA but the FFT requires the extra room
-  compute_elp(sigma, syndromes);
+    // Compute the error locator polynomial sigma
+    // Sigma's degree is at most PARAM_DELTA but the FFT requires the extra room
+    compute_elp(sigma, syndromes);
 
-  // Compute the error polynomial error
-  compute_roots(error, sigma);
-  
-  // Add the error polynomial to the received polynomial 
-  PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_vect_add(vector, vector, error, VEC_N1_SIZE_BYTES);
-  
-  // Retrieve the message from the decoded codeword
-  message_from_codeword(message, vector);
+    // Compute the error polynomial error
+    compute_roots(error, sigma);
+
+    // Add the error polynomial to the received polynomial
+    PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_vect_add(vector, vector, error, VEC_N1_SIZE_BYTES);
+
+    // Retrieve the message from the decoded codeword
+    message_from_codeword(message, vector);
 }
