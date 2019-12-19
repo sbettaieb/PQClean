@@ -18,9 +18,9 @@
 static void compute_fft_betas(uint16_t *betas);
 static void compute_subset_sums(uint16_t *subset_sums, const uint16_t *set, size_t set_size);
 static void radix_t(uint16_t *f, const uint16_t *f0, const uint16_t *f1, uint32_t m_f);
-static void fft_t_rec(uint16_t *f, const uint16_t *w, size_t f_coeffs, uint32_t m, uint32_t m_f, const uint16_t *betas);
+static void fft_t_rec(uint16_t *f, const uint16_t *w, size_t f_coeffs, uint8_t m, uint32_t m_f, const uint16_t *betas);
 static void radix(uint16_t *f0, uint16_t *f1, const uint16_t *f, uint32_t m_f);
-static void fft_rec(uint16_t *w, uint16_t *f, size_t f_coeffs, uint32_t m, uint32_t m_f, const uint16_t *betas);
+static void fft_rec(uint16_t *w, uint16_t *f, size_t f_coeffs, uint8_t m, uint32_t m_f, const uint16_t *betas);
 
 
 /**
@@ -161,14 +161,14 @@ static void radix_t(uint16_t *f, const uint16_t *f0, const uint16_t *f1, uint32_
  * @param[in] betas FFT constants
  */
 static void fft_t_rec(uint16_t *f, const uint16_t *w, size_t f_coeffs,
-                      uint32_t m, uint32_t m_f, const uint16_t *betas) {
+                      uint8_t m, uint32_t m_f, const uint16_t *betas) {
     size_t k = 1 << (m - 1);
     uint16_t gammas[PARAM_M - 2];
     uint16_t deltas[PARAM_M - 2];
     uint16_t gammas_sums[1 << (PARAM_M - 1)];
-    uint16_t u[1 << (PARAM_M - 2)];
-    uint16_t f0[1 << (PARAM_FFT_T - 2)];
-    uint16_t f1[1 << (PARAM_FFT_T - 2)];
+    uint16_t u[1 << (PARAM_M - 2)] = {0};
+    uint16_t f0[1 << (PARAM_FFT_T - 2)] = {0};
+    uint16_t f1[1 << (PARAM_FFT_T - 2)] = {0};
 
     // Step 1
     if (m_f == 1) {
@@ -192,7 +192,7 @@ static void fft_t_rec(uint16_t *f, const uint16_t *w, size_t f_coeffs,
     }
 
     // Compute gammas and deltas
-    for (size_t i = 0 ; i < m - 1 ; ++i) {
+    for (uint8_t i = 0 ; i < m - 1 ; ++i) {
         gammas[i] = PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_mul(betas[i], PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_inverse(betas[m - 1]));
         deltas[i] = PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_square(gammas[i]) ^ gammas[i];
     }
@@ -217,7 +217,7 @@ static void fft_t_rec(uint16_t *f, const uint16_t *w, size_t f_coeffs,
         }
         fft_t_rec(f0, u, (f_coeffs + 1) / 2, m - 1, m_f - 1, deltas);
     } else {
-        uint16_t v[1 << (PARAM_M - 2)];
+        uint16_t v[1 << (PARAM_M - 2)] = {0};
 
         u[0] = w[0] ^ w[k];
         v[0] = w[k];
@@ -264,8 +264,8 @@ void PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_fft_t(uint16_t *f, const uint16_t *w, siz
     uint16_t betas[PARAM_M - 1];
     uint16_t betas_sums[1 << (PARAM_M - 1)];
     size_t k = 1 << (PARAM_M - 1);
-    uint16_t u[1 << (PARAM_M - 1)];
-    uint16_t v[1 << (PARAM_M - 1)];
+    uint16_t u[1 << (PARAM_M - 1)] = {0};
+    uint16_t v[1 << (PARAM_M - 1)] = {0};
     uint16_t deltas[PARAM_M - 1];
     uint16_t f0[1 << (PARAM_FFT_T - 1)];
     uint16_t f1[1 << (PARAM_FFT_T - 1)];
@@ -408,7 +408,7 @@ static void radix(uint16_t *f0, uint16_t *f1, const uint16_t *f, uint32_t m_f) {
  * @param[in] betas FFT constants
  */
 static void fft_rec(uint16_t *w, uint16_t *f, size_t f_coeffs,
-                    uint32_t m, uint32_t m_f, const uint16_t *betas) {
+                    uint8_t m, uint32_t m_f, const uint16_t *betas) {
 
     uint16_t f0[1 << (PARAM_FFT - 2)];
     uint16_t f1[1 << (PARAM_FFT - 2)];
@@ -416,8 +416,8 @@ static void fft_rec(uint16_t *w, uint16_t *f, size_t f_coeffs,
     uint16_t deltas[PARAM_M - 2];
     size_t k = 1 << (m - 1);
     uint16_t gammas_sums[1 << (PARAM_M - 2)];
-    uint16_t u[1 << (PARAM_M - 2)];
-    uint16_t v[1 << (PARAM_M - 2)];
+    uint16_t u[1 << (PARAM_M - 2)] = {0};
+    uint16_t v[1 << (PARAM_M - 2)] = {0};
 
     // Step 1
     if (m_f == 1) {
@@ -449,7 +449,7 @@ static void fft_rec(uint16_t *w, uint16_t *f, size_t f_coeffs,
     radix(f0, f1, f, m_f);
 
     // Step 4: compute gammas and deltas
-    for (size_t i = 0 ; i < m - 1 ; ++i) {
+    for (uint8_t i = 0 ; i < m - 1 ; ++i) {
         gammas[i] = PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_mul(betas[i], PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_inverse(betas[m - 1]));
         deltas[i] = PQCLEAN_HQC2562CCA2_AVX2_LEAKTIME_gf_square(gammas[i]) ^ gammas[i];
     }

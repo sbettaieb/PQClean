@@ -24,7 +24,7 @@ void PQCLEAN_HQC2563CCA2_AVX2_LEAKTIME_repetition_code_encode(uint8_t *em, const
     uint8_t tmp[PARAM_N1N2] = {0};
     uint8_t bit = 0;
 
-    for (uint16_t i = 0 ; i < (VEC_N1_SIZE_BYTES - 1) ; ++i) {
+    for (size_t i = 0 ; i < (VEC_N1_SIZE_BYTES - 1) ; ++i) {
         for (uint8_t j = 0 ; j < 8 ; ++j) {
             bit = (m[i] >> j) & 0x01;
             uint32_t index = (8 * i + j) * PARAM_N2;
@@ -87,7 +87,7 @@ void PQCLEAN_HQC2563CCA2_AVX2_LEAKTIME_repetition_code_decode(uint8_t *m, const 
  * @param[in] v Pointer to an array
  */
 static void array_to_rep_codeword(uint8_t *o, const uint8_t *v) {
-    for (uint16_t i = 0 ; i < (VEC_N1N2_SIZE_BYTES - 1) ; ++i) {
+    for (size_t i = 0 ; i < (VEC_N1N2_SIZE_BYTES - 1) ; ++i) {
         for (uint8_t j = 0 ; j < 8 ; ++j) {
             o[i] |= v[j + 8 * i] << j;
         }
